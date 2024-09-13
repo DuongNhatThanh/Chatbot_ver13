@@ -63,11 +63,11 @@ Chatbot sales army is a chatbot product aimed at selling and consulting products
         └── prompt.py                       # chưa toàn bộ prompt cho LLM
 
 ## **3. To Install This Application, Follow These Steps:**
-#### 1. Clone the repository:
+#### Step1. Clone the repository:
     git clone https://github.com/PhamTrinhDuc/Chatbot_ver11
     cd Chatbot_ver11
 
-#### 2. (Optional) Create and activate a virtual environment:
+#### Step2. (Optional) Create and activate a virtual environment:
 - For Unix/macOS:
 ```bash
 python3 -m venv .venv
@@ -80,7 +80,7 @@ python -m venv venv
 .\venv\Scripts\activate
 ```
 
-#### 3. Before starting your application, you need to fill in some evironment variables. Create a `.env` file and fill in these
+#### Step3. Before starting your application, you need to fill in some evironment variables. Create a `.env` file and fill in these
 ```bash
 OPENAI_API_KEY = "sk-dTKKIChoB9Odh6JlFCbuaKpJVeojvF..."
 LANGCHAIN_API_KEY = "lsv2_pt_835e83bf17f94c78bc4e7b7..."
@@ -88,11 +88,11 @@ ELASTIC_CLOUD_ID = "My_deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJ..."
 ELASTIC_API_KEY = "RjRBUnZKRUJ6aEFqenhQVHVrRTU6TnRPZmVDS3RRRU9RZF..."
 ```
 
-#### 4. Install the necessary libraries for the project 
+#### Step4. Install the necessary libraries for the project 
 ```bash
 pip install -r requirements.txt
 ```
-#### 4. Chat with chatbot on gradio
+#### Step5. Chat with chatbot on gradio
 ```bash
 python3 run app.py
 ```
