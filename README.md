@@ -5,9 +5,12 @@
 ## **2. Tree project**
     ├── app.py                              # demo on gradio app
     ├── configs
-    │   ├── config_fewshot                  # chứa con ví dụ few shot cho sản phẩm
+    │   ├── config_fewshot                  # config cho elastic search và các ví dụ fewshot
+    │   │   ├── enum.py
+    │   │   ├── example_fewshot.yml
     │   ├── config.yml
-    │   ├── load_config.py                  # chứa config cho toàn bộ project
+    │   ├── __init__.py
+    │   ├── load_config.py
     ├── data
     │   ├── Cau_hoi_thuong_gap.csv          # file chứa các câu hỏi thường gặp của khách hàng
     │   ├── dieu_hoa.csv                    # file sản phẩm điều hòa
@@ -21,10 +24,6 @@
     │   ├── few_shot_sentence.py
     │   ├── indexing_db.py
     │   └── retrieval.py
-    ├── Examples                            # chứa các ví dụ cho few shot
-    │   ├── enum.py
-    │   ├── example.py
-    │   ├── example.yml
     ├── images                              # ảnh giao diện app
     │   ├── avt_bot.png
     │   ├── avt_vcc.png
@@ -35,7 +34,7 @@
     │   ├── terminal
     │   └── times
     ├── README.md                       
-    ├── requirements.txt                    # các thư viện yêu cầu cảu project
+    ├── requirements.txt                    # các thư viện yêu cầu của project
     ├── source
     │   ├── generater.py                    # file chat chính 
     │   ├── load_db.py                      # load vector embedding
@@ -50,3 +49,11 @@
         └── prompt.py                       # chưa toàn bộ prompt cho LLM
 
 ## **3. Run project**
+
+### 1. Configure .env file (similar to .example_env file)
+
+### 2. Install the necessary libraries for the project 
+        pip install -r requirements.txt
+
+### 3. Chat with chatbot on gradio
+        python3 run app.py
