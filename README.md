@@ -79,6 +79,11 @@ source .venv/bin/activate
 python -m venv venv
 .\venv\Scripts\activate
 ```
+- Conda:
+```bash
+conda create -n <env_name> python=<python_version> 
+conda activate env_name
+```
 
 #### Step3. Before starting your application, you need to fill in some evironment variables. Create a `.env` file and fill in these
 ```bash
