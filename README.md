@@ -3,8 +3,6 @@
 # SALES ARMY CHATBOT
 
 
-<img src="./images/Pipeline.png" alt="pipeline" width=1000 height=500/>
-
 [![GitHub stars](https://img.shields.io/github/stars/PhamTrinhDuc/Chatbot_ver11)](https://github.com/PhamTrinhDuc/Chatbot_ver11/stargazers)[![GitHub issues](https://img.shields.io/github/issues/PhamTrinhDuc/Chatbot_ver11)](https://github.com/PhamTrinhDuc/Chatbot_ver11/issues)
 
 
@@ -13,6 +11,10 @@ Chatbot sales army is a chatbot product aimed at selling and consulting products
 </div>
 
 ## **1. Pipeline**
+
+<div align="center">
+<img src="./images/Pipeline.png" alt="pipeline" width=1000 height=500/>
+</div>
 
 ## **2. Tree Project**
     ├── app.py                              # demo on gradio app
