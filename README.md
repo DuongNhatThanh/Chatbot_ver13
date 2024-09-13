@@ -50,10 +50,12 @@
 
 ## **3. Run project**
 
-### 1. Configure .env file (similar to .example_env file)
+    1. Configure .env file (similar to .example_env file)
 
-### 2. Install the necessary libraries for the project 
+    2. Install the necessary libraries for the project 
         pip install -r requirements.txt
 
-### 3. Chat with chatbot on gradio
+    3. Chat with chatbot on gradio
         python3 run app.py
+
+## **4. Demo**
