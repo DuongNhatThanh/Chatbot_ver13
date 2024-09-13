@@ -11,7 +11,7 @@ Chatbot sales army is a chatbot product aimed at selling and consulting products
 
 ## **1. Pipeline**
 
-## **2. Tree project**
+## **2. Tree Project**
     ├── app.py                              # demo on gradio app
     ├── configs
     │   ├── config_fewshot                  # config cho elastic search và các ví dụ fewshot
@@ -57,19 +57,25 @@ Chatbot sales army is a chatbot product aimed at selling and consulting products
         ├── __init__.py                     # import các thư viện từ module utils
         └── prompt.py                       # chưa toàn bộ prompt cho LLM
 
-## **3. Run project**
+## **3. To Install This Application, Follow These Steps:**
+#### 1. Clone the repository:
+    git clone https://github.com/PhamTrinhDuc/Chatbot_ver11
+    cd Chatbot_ver11
+#### 2. Before starting your application, you need to fill in some evironment variables. Create a `.env` file and fill in these:
+    OPENAI_API_KEY = "sk-dTKKIChoB9Odh6JlFCbuaKpJVeojvF..."
+    LANGCHAIN_API_KEY = "lsv2_pt_835e83bf17f94c78bc4e7b7..."
+    ELASTIC_CLOUD_ID = "My_deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJ..."
+    ELASTIC_API_KEY = "RjRBUnZKRUJ6aEFqenhQVHVrRTU6TnRPZmVDS3RRRU9RZF..."
 
-#### 1. Configure .env file (similar to .example_env file)
-
-#### 2. Install the necessary libraries for the project 
+#### 3. Install the necessary libraries for the project 
     pip install -r requirements.txt
 
-#### 3. Chat with chatbot on gradio
+#### 4. Chat with chatbot on gradio
     python3 run app.py
 
-## **4. Demo**
+## **5. Demo Result**
 
-## **5. Acknowldgement**
+## **6. Acknowldgement**
 
 SALES ARMY CHATBOT made possible by these key technologies:
 
