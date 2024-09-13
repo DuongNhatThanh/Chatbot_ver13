@@ -1,8 +1,8 @@
-# Đội quân bán hàng
+# SALES ARMY CHATBOT
 
-## 1. Pipeline
+## **1. Pipeline**
 
-## 2. Cây thư mục 
+## **2. Tree project**
     ├── app.py                              # demo on gradio app
     ├── configs
     │   ├── config_fewshot                  # chứa con ví dụ few shot cho sản phẩm
@@ -48,3 +48,5 @@
         ├── data_process.py                 # convert csv to text
         ├── __init__.py                     # import các thư viện từ module utils
         └── prompt.py                       # chưa toàn bộ prompt cho LLM
+
+## **3. Run project**
