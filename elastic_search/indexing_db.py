@@ -1,6 +1,11 @@
+import os
+import dotenv
+import pandas as pd
 from elasticsearch import Elasticsearch
 
-def init_elastic(df, index_name,ELASTIC_CLOUD_ID,ELASTIC_API_KEY):
+dotenv.load_dotenv()
+
+def init_elastic(df: pd.DataFrame, index_name: str) -> Elasticsearch:
     # Create the client instance
     # client = Elasticsearch(
     # # For local development
@@ -8,8 +13,8 @@ def init_elastic(df, index_name,ELASTIC_CLOUD_ID,ELASTIC_API_KEY):
     # hosts=[ELASTIC_HOST]
     # )
     client = Elasticsearch(
-    cloud_id=ELASTIC_CLOUD_ID,
-    api_key=ELASTIC_API_KEY,
+    cloud_id=os.getenv("ELASTIC_CLOUD_ID"),
+    api_key=os.getenv("ELASTIC_API_KEY"),
     )
     # Define the mappings
     mappings = {

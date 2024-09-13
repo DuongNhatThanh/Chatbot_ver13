@@ -1,8 +1,6 @@
 import os
 from dotenv import load_dotenv
 import yaml
-import shutil
-from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
@@ -16,24 +14,26 @@ os.environ['OPENAI_API_KEY'] = os.getenv("OPENAI_API_KEY")
 
 class LoadConfig:
     def __init__(self) -> None:
-        with open("./configs/config.yml") as cfg:
+        with open("./configs/config.yml", mode='r') as cfg:
             app_config = yaml.load(cfg, Loader=yaml.FullLoader)
         
         self.load_directories(app_config=app_config)
         self.load_llm_config(app_config=app_config)
-        self.load_chunk_config(app_config=app_config)
         self.load_retriver_config(app_config=app_config)
 
     def load_directories(self, app_config):
         # Load parameters directories from load_config.yml file 
-        self.persist_vector_directory = (
-            app_config['directories']['persist_vector_directory']
+        self.vector_database_directory = (
+            app_config['directories']['vector_database_directory']
         )
-        self.csv_product_directory = (
-            app_config['directories']['csv_product_directory']
+        self.csv_dieu_hoa_directory = (
+            app_config['directories']['csv_dieu_hoa_directory']
         )
         self.csv_question_user = (
             app_config['directories']['csv_question_user']
+        )
+        self.csv_all_product_directory = (
+            app_config['directories']['csv_all_product_directory']
         )
 
         
@@ -46,24 +46,17 @@ class LoadConfig:
         self.max_token = app_config['llm_config']['max_token']
         
     def load_retriver_config(self, app_config):
-        self.vector_embed_size = app_config['retriever_config']['vector_embed_size']
-        self.embedding_model = app_config['retriever_config']['embedding_model']
+        self.embedding_baai = app_config['retriever_config']['embedding_baai']
+        self.vector_embed_baai = app_config['retriever_config']['vector_embed_baai']
+        self.vector_embed_openai = app_config['retriever_config']['vector_embed_openai']
+        self.embedding_openai = app_config['retriever_config']['embedding_openai']
         self.top_k_product = app_config['retriever_config']['top_k_product']
         self.top_k_question = app_config['retriever_config']['top_k_question']
-
-    def load_chunk_config(self, app_config):
-        self.chunk_size = app_config['chunk_config']['chunk_size']
-        self.chunk_overlap = app_config['chunk_config']['chunk_overlap']
-
 
     def load_embed_openai_model(self) -> OpenAIEmbeddings:
         embedding_model = OpenAIEmbeddings()
         return embedding_model
     
-    def load_embed_bge_model(self) -> FastEmbedEmbeddings:
-        embedding_model = FastEmbedEmbeddings(model_name=self.embedding_model)
-        return embedding_model
-
     def load_rag_model(self) -> ChatOpenAI:
         rag_model = ChatOpenAI(
             model=self.rag_model,
@@ -92,3 +85,5 @@ class LoadConfig:
             verbose=True,
         )
         return rewrite_model
+    
+SYSTEM_CONFIG = LoadConfig()

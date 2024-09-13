@@ -1,4 +1,3 @@
-# import psycopg2
 import re
 import ast
 import time
@@ -6,20 +5,14 @@ import logging
 import pandas as pd
 from typing import Dict
 from elasticsearch import Elasticsearch
-from Examples.example import get_exapmle
-from Examples.enum import Variable
-from utils import timing_decorator
 from elastic_search.indexing_db import init_elastic
 from elastic_search.few_shot_sentence import find_closest_match
+from utils import timing_decorator
+from configs import ELASTICH_SEARCH_CONFIG, SYSTEM_CONFIG
 
 
-enum = Variable()
-example_fewshot = get_exapmle()
-
-number_size_elas = example_fewshot['parameter']['num_size_elas']
-ELASTIC_CLOUD_ID = "My_deployment:dXMtY2VudHJhbDEuZ2NwLmNsb3VkLmVzLmlvJDBkZjBlMTc3ZGI0ZDQ2YThiY2U4NTYzOWNlYTE1NThjJDM2YzlkYTY3MDA5NzRjYjA4ZTcwMDdlN2QxM2M1MGVj"
-ELASTIC_API_KEY = "RjRBUnZKRUJ6aEFqenhQVHVrRTU6TnRPZmVDS3RRRU9RZFZiNVNGUEgtZw=="
-df = pd.read_excel(example_fewshot['parameter']['data_private'])
+number_size_elas = ELASTICH_SEARCH_CONFIG.num_size_elas
+dataframe = pd.read_excel(SYSTEM_CONFIG.csv_all_product_directory)
 
 def parse_price_range(price):
     pattern = r"(?P<prefix>\b(dưới|trên|từ|đến|khoảng)\s*)?(?P<number>\d+(?:,\d+)*)\s*(?P<unit>triệu|nghìn|tr|k|kg|l|lít|kw|w|t|btu)?\b"
@@ -57,10 +50,11 @@ def parse_price_range(price):
     print('min_price, max_price:',min_price, max_price)
     return min_price, max_price
 
-def search_specifications(client, index_name, product, product_name, specifications, price, power, weight, volume):
+def search_specifications(client, index_name, product, product_name, 
+                          specifications, price, power, weight, volume):
     order = "asc"  # Default order
-    cheap_keywords = enum.CHEAP_KEYWORDS
-    expensive_keywords = enum.EXPENSIVE_KEYWORDS
+    cheap_keywords = ELASTICH_SEARCH_CONFIG.chep_keywords
+    expensive_keywords = ELASTICH_SEARCH_CONFIG.expensive_keywords
     word = ""
     for keyword in cheap_keywords:
         if keyword in price.lower():
@@ -155,10 +149,11 @@ def search_specifications(client, index_name, product, product_name, specificati
     response = client.search(index=index_name, body=query)
     return response
        
-def search_prices(client, index_name, product, product_name, price, power, weight, volume):
+def search_prices(client, index_name, product, product_name, 
+                  price, power, weight, volume):
     order = "asc"  # Default order
-    cheap_keywords = enum.CHEAP_KEYWORDS
-    expensive_keywords = enum.CHEAP_KEYWORDS
+    cheap_keywords = ELASTICH_SEARCH_CONFIG.chep_keywords
+    expensive_keywords = ELASTICH_SEARCH_CONFIG.expensive_keywords
     word = ""
     for keyword in cheap_keywords:
         if keyword in price.lower():
@@ -252,8 +247,8 @@ def search_prices(client, index_name, product, product_name, price, power, weigh
 
     return res
 
-def search_quantity(client: Elasticsearch, 
-                    index_name: str, product, product_name, price, power, weight, volume):
+def search_quantity(client: Elasticsearch, index_name: str, product, product_name, 
+                    price, power, weight, volume):
     query = {
             "query": {
                 "bool": {
@@ -350,10 +345,10 @@ def search_db(demands: Dict):
     out_text = ""
     products, product_names = [], []
     product_dict = {}
-    index_name = enum.INDEX_ELASTIC
+    index_name = ELASTICH_SEARCH_CONFIG.index_name
     # client = init_elastic(df,index_name, ELASTIC_HOST)
-    client = init_elastic(df, index_name, ELASTIC_CLOUD_ID, ELASTIC_API_KEY)
-    list_product = df['group_name'].unique()
+    client = init_elastic(dataframe, index_name)
+    list_product = dataframe['group_name'].unique()
     check_match_product = find_closest_match(demands['object'][0], list_product)
     # return check_match_product
 
@@ -379,7 +374,7 @@ def search_db(demands: Dict):
     for product_name, price in zip(product_names, prices):
         product_match = find_closest_match(product_name, list_product)[0]
         print("=====product_match====",product_match, product_name)
-        result_df = df[df['group_name'] == product_match]
+        result_df = dataframe[dataframe['group_name'] == product_match]
         product = result_df['group_product_name'].tolist()[0]
         # full option specifications, giá, công suất, khối lượng, dung tích
         if specifications and (price or power or weight or volume) or specifications:

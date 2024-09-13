@@ -10,7 +10,7 @@ def create_db(db_name: str) -> Union[str, Chroma, int]:
     """
     Load data chunked và tạo vector db cho data
     """
-    db_path = os.path.join(CFG_APP.persist_vector_directory, db_name)
+    db_path = os.path.join(CFG_APP.vector_database_directory, db_name)
     if db_name == "dieu_hoa":
         csv_path = CFG_APP.csv_product_directory
         data_chunked = csv2txt_product(csv_link=csv_path)

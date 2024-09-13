@@ -2,13 +2,10 @@ from fuzzywuzzy import fuzz, process
 from typing import Dict, List
 from langchain.prompts.few_shot import FewShotPromptTemplate
 from langchain.prompts.prompt import PromptTemplate
-from Examples.example import get_exapmle
-from configs.load_config import LoadConfig
+from configs import SYSTEM_CONFIG, ELASTICH_SEARCH_CONFIG
 
 
-example_fewshot = get_exapmle()
-APP_CFG = LoadConfig()
-llm = APP_CFG.load_rag_model()
+llm = SYSTEM_CONFIG.load_rag_model()
 
 def split_sentences(text_input: str, examples: Dict) -> str:
 
@@ -124,19 +121,19 @@ def classify_intent(question: str) -> Dict:
     }).content
 
     if "giá" in query_classified.lower():
-        examples = example_fewshot['parameter']['example_price']
+        examples = ELASTICH_SEARCH_CONFIG.example_price
         json_fewshoted =  extract_info(question, examples)
     elif "công suất" in query_classified.lower():
-        examples = example_fewshot['parameter']['example_power']
+        examples = ELASTICH_SEARCH_CONFIG.example_power
         json_fewshoted =  extract_info(question, examples)
     elif "khối lượng" in query_classified.lower():
-        examples = example_fewshot['parameter']['example_weight']
+        examples = ELASTICH_SEARCH_CONFIG.example_weight
         json_fewshoted =  extract_info(question, examples)
     elif "dung tích" in query_classified.lower():
-        examples = example_fewshot['parameter']['example_volume']
+        examples = ELASTICH_SEARCH_CONFIG.example_volume
         json_fewshoted =  extract_info(question, examples)
     else:
-        examples = example_fewshot['parameter']['example_quantity']
+        examples = ELASTICH_SEARCH_CONFIG.example_quantity
         json_fewshoted =  extract_info(question, examples)
 
     return json_fewshoted
