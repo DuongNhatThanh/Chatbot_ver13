@@ -7,9 +7,10 @@ import pandas as pd
 from typing import Dict
 from elasticsearch import Elasticsearch
 from Examples.example import get_exapmle
+from Examples.enum import Variable
+from utils import timing_decorator
 from elastic_search.indexing_db import init_elastic
 from elastic_search.few_shot_sentence import find_closest_match
-from Examples.enum import Variable
 
 
 enum = Variable()
@@ -342,29 +343,27 @@ def search_product(client, index_name, product_name):
     res = client.search(index=index_name, body=query)
     return res
 
+
+@timing_decorator
 def search_db(demands: Dict):
-    '''
-    
-    '''
     #init 
     out_text = ""
-    products = []
+    products, product_names = [], []
     product_dict = {}
     index_name = enum.INDEX_ELASTIC
     # client = init_elastic(df,index_name, ELASTIC_HOST)
     client = init_elastic(df, index_name, ELASTIC_CLOUD_ID, ELASTIC_API_KEY)
-    product_names = []
     list_product = df['group_name'].unique()
     check_match_product = find_closest_match(demands['object'][0], list_product)
     # return check_match_product
 
     print('check_match_product',check_match_product)
-    if check_match_product[1] < 75:
-        # out_text += f"Anh/chị có thể cho tôi biết thêm thông tin chi tiết sản phẩm để tôi có thể hỗ trợ Anh/chị được không?" 
-        ok = 0
-        return out_text, products, ok
-    elif len(demands)>1:
+    if check_match_product[1] < 75: # nếu độ match < 75 thì không tìm được sản phẩm
+        check = 0
+        return out_text, products, check
+    else:
         product_names = demands['object']
+        # if else fill độ dài sản phẩm = độ dài giá
         if isinstance(demands['price'], list):
             prices = demands['price']*len(demands['object'])
         else:
@@ -373,16 +372,10 @@ def search_db(demands: Dict):
         weight = demands['weight']
         volume = demands['volume']
         specifications = demands['specifications']
-    else:
-        product_names = demands['object']
-        prices = ['']*len(demands['object'])
-        power = ''
-        weight = ''
-        volume = ''
-        specifications = ''
+
+    t1 = time.time()
     print('------check object----', product_names)
     result = []
-    t1 = time.time()
     for product_name, price in zip(product_names, prices):
         product_match = find_closest_match(product_name, list_product)[0]
         print("=====product_match====",product_match, product_name)
@@ -393,27 +386,27 @@ def search_db(demands: Dict):
             # Count quantity each group name
             if len([specifications]) > 1:
                 resp = search_specifications(client, index_name, product, product_name, specifications, price, power, weight, volume)
-                ok = 2 
+                check = 2 
             elif price or power or weight or volume:
                 resp = search_prices(client, index_name, product, product_name, price,  power, weight, volume)
-                ok = 2 
+                check = 2 
             else:
                 resp = search_product(client, index_name, product_name)
-                ok = 2
+                check = 2
             
         elif price or power or weight or volume:
             resp = search_prices(client, index_name, product, product_name,price,  power, weight, volume)
-            ok = 2 
+            check = 2 
         else:
             resp = search_product(client, index_name, product_name)
-            ok = 2
+            check = 2
 
         result.append(resp)
 
     for product_name, product in zip(product_names, result):
         s_name = product_name
         # Check query is None
-        if product['hits']['hits'] == [] and ok != 0:
+        if product['hits']['hits'] == [] and check != 0:
             out_text += ""
             break
         cnt = 0
@@ -428,7 +421,7 @@ def search_db(demands: Dict):
             }
             if check_score is None or float(check_score) >= 2.5:
                 cnt+=1
-                if ok == 2:
+                if check == 2:
                     if len(product_names) > 1 and i < 2:
                         out_text += f"\n{i + 1}. *{product_details['product_name']} - Mã: {product_details['product_code']}\n"
                         out_text += f"  Thông số sản phẩm: {product_details['specification']}\n"
@@ -448,7 +441,7 @@ def search_db(demands: Dict):
                             "link": product_details['file_path']
                         }
                         product_dict[f'{i+1}'] = product_details['product_name']
-                elif ok == 1 and i < 3:
+                elif check == 1 and i < 3:
                     quantity_name +=f"  {product_details['product_name']} - Mã: {product_details['product_code']}\n"
                     # quantity_name +=  " -  Giá tiền: {:,.0f} đ*\n".format(product_details['lifecare_price'])
                     quantity_name += f"  Thông số sản phẩm: {product_details['specification']}\n"
@@ -461,11 +454,11 @@ def search_db(demands: Dict):
                         }
                 if len(products) < 10 and product['code'] != "":
                     products.append(product)
-        if ok == 1:
+        if check == 1:
             out_text += f"---Hiện có {cnt} sản phẩm là:"
             out_text += quantity_name
             out_text += f"...còn nữa. Hãy trả lời là có {cnt} sản phẩm!"
     print("-----time elastic search-------:",time.time() - t1)
     logging.info(f'======== elasticsearch output ==========:\n{out_text}')
     print('======== elasticsearch output ==========:\n', out_text)
-    return out_text, products, ok
+    return out_text, products, check

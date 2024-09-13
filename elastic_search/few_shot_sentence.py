@@ -123,8 +123,6 @@ def classify_intent(question: str) -> Dict:
         "question": question
     }).content
 
-    print(query_classified)
-    
     if "giá" in query_classified.lower():
         examples = example_fewshot['parameter']['example_price']
         json_fewshoted =  extract_info(question, examples)

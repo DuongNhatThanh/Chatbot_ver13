@@ -6,8 +6,9 @@ from langchain_community.vectorstores import Chroma
 from langchain.retrievers import EnsembleRetriever, ContextualCompressionRetriever
 from langchain_cohere import CohereRerank
 from langchain_community.retrievers import BM25Retriever
-from configs.load_config import LoadConfig
 from source.load_db import create_db
+from configs.load_config import LoadConfig
+from utils import timing_decorator
 
 APP_CONFIG = LoadConfig()
 dotenv.load_dotenv()
@@ -45,7 +46,7 @@ def init_retriever(vector_db: Chroma, data_chunked: List[Document], top_k: int) 
     # )
     return ensemble_retriever
 
-
+@timing_decorator
 def get_context(query: str, db_name: str) -> str:
     """
     Hàm này để lấy context từ câu hỏi của người dùng

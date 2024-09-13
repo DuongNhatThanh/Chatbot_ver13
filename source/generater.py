@@ -2,10 +2,14 @@ from typing import Dict
 from langchain.memory import ConversationBufferWindowMemory
 from source.retriever import get_context
 from source.router import call_funcion
-from utils.base_model import GradeReWrite
-from utils.prompt import PROMPT_HISTORY, PROMPT_HEADER
 from elastic_search.few_shot_sentence import classify_intent
 from elastic_search.retrieval import search_db
+from utils import (
+    PROMPT_HEADER,
+    PROMPT_HISTORY,
+    GradeReWrite,
+    timing_decorator
+)
 from logs.logger import set_logging_error, set_logging_terminal
 from configs.load_config import LoadConfig
 
@@ -19,7 +23,7 @@ def get_history() -> str:
     history = memory.load_memory_variables({})
     return history['chat_history']
 
-
+@timing_decorator
 def rewrite_query(query: str, history: str) -> str: 
     
     """
@@ -39,7 +43,7 @@ def rewrite_query(query: str, history: str) -> str:
     
     return query_rewrite
 
-
+@timing_decorator
 def chat_with_history(query: str, history) -> Dict[str, str]:
     """
     Hàm này để trả lời câu hỏi của người dùng theo flow: get_history + query-> rewrite_query -> router -> get_context OR search_db OR out_text -> LLM -> response
@@ -93,11 +97,8 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
                                          db_name="Cau_hoi_thuong_gap")
         demands = classify_intent(query_rewrited)
         print("= = = = result few short = = = =:", demands)
-        if len(demands['object']) >= 1:
-            response_elastic, products, ok = search_db(demands)
-            save_outtext = response_elastic
-        else: 
-            save_outtext = ""
+        response_elastic, products, check = search_db(demands)
+        save_outtext = response_elastic
         prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
                                             context=save_outtext, 
                                             instruction_answer=instruction_answer)
@@ -112,6 +113,7 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
 
     return "", history
 
+@timing_decorator
 def chat_with_history_copy(query: str) -> Dict[str, str]:
     """
     Hàm này để trả lời câu hỏi của người dùng theo flow: get_history + query-> rewrite_query -> router -> get_context OR search_db OR out_text -> LLM -> response
