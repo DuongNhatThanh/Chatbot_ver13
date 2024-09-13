@@ -1,8 +1,8 @@
 <div align="center">
 
-[![GitHub stars](https://img.shields.io/github/stars/PhamTrinhDuc/Chatbot_ver11)](https://github.com/PhamTrinhDuc/Chatbot_ver11/stargazers)[![GitHub issues](https://img.shields.io/github/issues/PhamTrinhDuc/Chatbot_ver11)](https://github.com/PhamTrinhDuc/Chatbot_ver11/issues)
-
 # SALES ARMY CHATBOT
+
+[![GitHub stars](https://img.shields.io/github/stars/PhamTrinhDuc/Chatbot_ver11)](https://github.com/PhamTrinhDuc/Chatbot_ver11/stargazers)[![GitHub issues](https://img.shields.io/github/issues/PhamTrinhDuc/Chatbot_ver11)](https://github.com/PhamTrinhDuc/Chatbot_ver11/issues)
 
 
 Chatbot sales army is a chatbot product aimed at selling and consulting products by interacting directly with customers. Chatbot uses RAG techniques - an advanced artificial intelligence solution that combines the ability to retrieve accurate information and the ability to generate natural answers.
