@@ -97,7 +97,7 @@ ELASTIC_API_KEY = "RjRBUnZKRUJ6aEFqenhQVHVrRTU6TnRPZmVDS3RRRU9RZF..."
 ```bash
 pip install -r requirements.txt
 ```
-#### Step 5. Chat with chatbot on gradio
+#### Step 5. Chat interface gradio
 ```bash
 python3 run app.py
 ```
