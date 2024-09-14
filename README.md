@@ -105,7 +105,7 @@ python3 run app.py
 
 ## **6. Acknowldgement**
 
-SALES ARMY CHATBOT made possible by these key technologies:
+ARMY SALES CHATBOT is conducted by interns Pham Duc and Tran Hao at VCC. We apply some of the following technologies::
 
 - [Langchain](https://www.langchain.com/): Providing the RAG (Retrieval Augmented Generation) framework.
 - [Gradio](https://www.gradio.app/): Enabling the intuitive user interface.
