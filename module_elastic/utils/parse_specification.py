@@ -54,7 +54,7 @@ def get_keywords(specification: str)-> Tuple[str, str, str]:
         specifications: str = "": thông số kĩ thuật
     """
 
-    order, word= "asc", ""  # Default order
+    order, word = "asc", ""  # Default order
     cheap_keywords = ELASTICH_SEARCH_CONFIG.cheap_keywords
     expensive_keywords = ELASTICH_SEARCH_CONFIG.expensive_keywords
 

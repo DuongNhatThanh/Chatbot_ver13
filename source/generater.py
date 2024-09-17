@@ -30,10 +30,10 @@ def rewrite_query(query: str, history: str) -> str:
     Sử dụng LLM để viết lại câu hỏi của người dùng thành 1 câu mới dựa vào lịch sử trước đó và câu hỏi hiện tại.
 
     Arg:
-        query: câu hỏi của người dùng
-        history: lịch sử của người dùng
+        - query: câu hỏi của người dùng
+        - history: lịch sử của người dùng
     Return:
-        trả về câu hỏi được viết lại.
+        - trả về câu hỏi được viết lại.
     """
     logger_terminal.info(f"Query User: {query}")
 
@@ -49,7 +49,7 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
     Hàm này để trả lời câu hỏi của người dùng theo flow: get_history + query-> rewrite_query -> router -> get_context OR search_db OR out_text -> LLM -> response
 
     Args: 
-        query: câu hỏi của người dùng
+        - query: câu hỏi của người dùng
     Return:
         Dictionary chứa các thông tin sau:
             - type: loại câu hỏi
@@ -119,7 +119,7 @@ def chat_with_history_copy(query: str) -> Dict[str, str]:
     Hàm này để trả lời câu hỏi của người dùng theo flow: get_history + query-> rewrite_query -> router -> get_context OR search_db OR out_text -> LLM -> response
 
     Args: 
-        query: câu hỏi của người dùng
+        - query: câu hỏi của người dùng
     Return:
         Dictionary chứa các thông tin sau:
             - type: loại câu hỏi
@@ -144,10 +144,6 @@ def chat_with_history_copy(query: str) -> Dict[str, str]:
                                             instruction_answer="")
         response  = APP_CFG.load_rag_model().invoke(input=prompt_final).content
         results['out_text'] = response
-
-    elif type == "extract_inventory": # sản phẩm tồn kho
-        results["extract_inventory"] = True
-        results['out_text'] = "Anh/chị vui lòng nhập mã hoặc tên sản phẩm và mã tỉnh theo mẫu sau:"
 
     elif type == "extract_similarity": # sản phẩm tương tự
         results["extract_similarity"] = True

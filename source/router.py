@@ -21,13 +21,6 @@ def extract_product_text(input_text):
         input_text (str): Toàn bộ nội dung văn bản đầu vào
     '''
 
-def extract_inventory(inventory):
-    '''
-    Bạn là chuyên gia phân tích dữ liệu lấy thông tin từ "Input" và trả về thông tin về vấn đề tồn kho của sản phẩm điều hòa:
-    Inputs:
-        inventory (str): Nếu trong câu có từ "kho" thì giá trị của inventory bằng "kho" còn nếu trong câu không có từ "kho" thì bằng ""
-    '''
-
 def extract_similarity(similarity_product):
     '''
     Bạn là chuyên gia phân tích dữ liệu lấy thông tin từ "Input" và trả về thông tin về sản phẩm tương tự
@@ -85,19 +78,6 @@ my_custom_functions = [
         }
     },
     {
-        'name': 'extract_inventory',
-        'description': 'Nhận thông tin "Input" từ nội dung văn bản đầu vào sau đó phải trả ra thông tin tôi cho ở dưới',
-        'parameters': {
-            'type': 'object',
-            'properties': {
-                'inventory': {
-                    'type': 'string',
-                    'description': 'Nếu trong câu có từ "kho", "còn không" thì giá trị của inventory bằng "kho" còn nếu trong câu không có từ "kho" thì bằng ""'
-                }
-            }
-        }
-    },
-    {
         'name': 'extract_similarity',
         'description': 'Nhận thông tin "Input" từ nội dung văn bản đầu vào sau đó phải trả ra thông tin tôi cho ở dưới',
         'parameters': {
@@ -115,6 +95,13 @@ my_custom_functions = [
 
 
 def call_funcion(input: str) -> str:
+    """
+    Sử dụng function calling để gọi các hàm custom và phân loại câu hỏi của người dùng.
+    Args:
+        - input: câu hỏi của người dùng
+    Return:
+        - function_called: tên hàm được gọi
+    """
 
     openai_response = openai.chat.completions.create(
         model = 'gpt-4o-mini',
