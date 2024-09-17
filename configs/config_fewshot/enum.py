@@ -15,7 +15,7 @@ class LoadConfig:
         self.num_size_elas = self.app_config['search_config']['num_size_elas']
         self.index_name = self.app_config['search_config']['index_name']
         self.quantity_specifications = self.app_config['search_config']['quantity_specifications']
-        self.chep_keywords = self.app_config['search_config']['chep_keywords']
+        self.cheap_keywords = self.app_config['search_config']['cheap_keywords']
         self.expensive_keywords = self.app_config['search_config']['expensive_keywords']
 
     def load_example_fewshot(self):

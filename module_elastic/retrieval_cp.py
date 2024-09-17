@@ -5,8 +5,12 @@ import logging
 import pandas as pd
 from typing import Dict
 from elasticsearch import Elasticsearch
-from elastic_search.indexing_db import init_elastic
-from elastic_search.few_shot_sentence import find_closest_match
+from module_elastic import (
+    init_elastic,
+    find_closest_match,
+    parse_specification_range,
+    get_keywords
+)
 from utils import timing_decorator
 from configs import ELASTICH_SEARCH_CONFIG, SYSTEM_CONFIG
 
@@ -14,46 +18,14 @@ from configs import ELASTICH_SEARCH_CONFIG, SYSTEM_CONFIG
 number_size_elas = ELASTICH_SEARCH_CONFIG.num_size_elas
 dataframe = pd.read_excel(SYSTEM_CONFIG.csv_all_product_directory)
 
-def parse_price_range(price):
-    pattern = r"(?P<prefix>\b(dưới|trên|từ|đến|khoảng)\s*)?(?P<number>\d+(?:,\d+)*)\s*(?P<unit>triệu|nghìn|tr|k|kg|l|lít|kw|w|t|btu)?\b"
-    print(pattern)
-    min_price = 0
-    max_price = 100000000
-    for match in re.finditer(pattern, price, re.IGNORECASE):
-        prefix = match.group('prefix') or ''
-        number = float(match.group('number').replace(',', ''))
-        unit = match.group('unit') or ''
-        if unit.lower() == '':
-            return min_price, max_price
-
-        if unit.lower() in ['triệu','tr','t']:
-            number *= 1000000
-        elif unit.lower() in ['nghìn','k']:
-            number *= 1000
-        elif unit.lower() in ['kw']:
-            number *= 1000
-
-        if prefix.lower().strip() == 'dưới':
-            max_price = min(max_price, number)
-        elif prefix.lower().strip() == 'trên':
-            min_price = min(max_price, number)
-        elif prefix.lower().strip() == 'từ':
-            min_price = min(max_price, number)
-        elif prefix.lower().strip() == 'đến':
-            max_price = max(min_price, number)
-        else:  # Trường hợp không có từ khóa
-            min_price = number * 0.8
-            max_price = number * 1.2
-
-    if min_price == float('inf'):
-        min_price = 0
-    print('min_price, max_price:',min_price, max_price)
-    return min_price, max_price
-
 def search_specifications(client, index_name, product, product_name, 
                           specifications, price, power, weight, volume):
+    
+    """
+    Search các thông số kĩ thuật khác ngoài 4 thông số cơ bản: price, power, weight, volume.
+    """
     order = "asc"  # Default order
-    cheap_keywords = ELASTICH_SEARCH_CONFIG.chep_keywords
+    cheap_keywords = ELASTICH_SEARCH_CONFIG.cheap_keywords
     expensive_keywords = ELASTICH_SEARCH_CONFIG.expensive_keywords
     word = ""
     for keyword in cheap_keywords:
@@ -99,7 +71,7 @@ def search_specifications(client, index_name, product, product_name,
         ]
 
     if price :
-      min_price, max_price = parse_price_range(price)
+      min_price, max_price = parse_specification_range(price)
       price_filter = {
           "range": {
               "lifecare_price": {
@@ -111,7 +83,7 @@ def search_specifications(client, index_name, product, product_name,
       query["query"]["bool"]["must"].append(price_filter)
 
     if power:
-      min_power, max_power = parse_price_range(power)
+      min_power, max_power = parse_specification_range(power)
       power_filter = {
           "range": {
               "power": {
@@ -123,7 +95,7 @@ def search_specifications(client, index_name, product, product_name,
       query["query"]["bool"]["must"].append(power_filter)
 
     if weight:
-        min_weight, max_weight = parse_price_range(weight)
+        min_weight, max_weight = parse_specification_range(weight)
         weight_filter = {
             "range": {
                 "weight": {
@@ -135,7 +107,7 @@ def search_specifications(client, index_name, product, product_name,
         query["query"]["bool"]["must"].append(weight_filter)
 
     if volume:
-        min_volume, max_volume = parse_price_range(volume)
+        min_volume, max_volume = parse_specification_range(volume)
         volume_filter = {
             "range": {
                 "volume": {
@@ -149,25 +121,22 @@ def search_specifications(client, index_name, product, product_name,
     response = client.search(index=index_name, body=query)
     return response
        
-def search_prices(client, index_name, product, product_name, 
+def search_values(client, index_name, product, product_name, 
                   price, power, weight, volume):
-    order = "asc"  # Default order
-    cheap_keywords = ELASTICH_SEARCH_CONFIG.chep_keywords
-    expensive_keywords = ELASTICH_SEARCH_CONFIG.expensive_keywords
-    word = ""
-    for keyword in cheap_keywords:
-        if keyword in price.lower():
-            order = "asc"
-            word = keyword
-            price = ""
-    for keyword in expensive_keywords:
-        if keyword in price.lower():
-            order = "desc"
-            word = keyword
-            price = ""
-    # Build the base query
-    # Create the Elasticsearch query if a product is found
-    
+    """
+    Search các thông số của price, power, weight, volume và có thể search các giá trị min max của các thông số này.
+    Args:
+        client: Elasticsearch client
+        index_name: Tên index
+        product: Tên sản phẩm
+        product_name: Tên sản phẩm
+        price: Giá tiền
+        power: Công suất
+        weight: Khối lượng
+        volume: Dung tích
+    Returns:
+        response: Kết quả tìm kiếm từ elasticsearch
+    """
     query = {
         "query": {
             "bool": {
@@ -188,14 +157,16 @@ def search_prices(client, index_name, product, product_name,
         "size": number_size_elas
     }
 
-    if word:
-        query["sort"] = [
-            {"lifecare_price": {"order": order}}
-        ]
+    print(power)
 
     # Add specifications-based filters
-    if price:
-        min_price, max_price = parse_price_range(price)
+    if price is not None:
+        order, word, _price = get_keywords(price)
+        if word:
+            query["sort"] = [
+                {"lifecare_price": {"order": order}}
+            ]
+        min_price, max_price = parse_specification_range(_price)
         price_filter = {
             "range": {
                 "lifecare_price": {
@@ -206,8 +177,15 @@ def search_prices(client, index_name, product, product_name,
         }
         query["query"]["bool"]["must"].append(price_filter)
 
-    if power:
-        min_power, max_power = parse_price_range(power)
+    if power is not None:
+        order, word, _power = get_keywords(power)
+        print(order)
+        if word:
+            query["sort"] = [
+                {"lifecare_price": {"order": order}}
+            ]
+
+        min_power, max_power = parse_specification_range(_power)
         power_filter = {
             "range": {
                 "power": {
@@ -218,8 +196,14 @@ def search_prices(client, index_name, product, product_name,
         }
         query["query"]["bool"]["must"].append(power_filter)
 
-    if weight:
-        min_weight, max_weight = parse_price_range(weight)
+    if weight is not None:
+        order, word, _weight = get_keywords(weight)
+        if word:
+            query["sort"] = [
+                {"lifecare_price": {"order": order}}
+            ]
+
+        min_weight, max_weight = parse_specification_range(_weight)
         weight_filter = {
             "range": {
                 "weight": {
@@ -230,8 +214,13 @@ def search_prices(client, index_name, product, product_name,
         }
         query["query"]["bool"]["must"].append(weight_filter)
 
-    if volume:
-        min_volume, max_volume = parse_price_range(volume)
+    if volume is not None:
+        order, word, _volume = get_keywords(volume)
+        if word:
+            query["sort"] = [
+                {"lifecare_price": {"order": order}}
+            ]
+        min_volume, max_volume = parse_specification_range(_volume)
         volume_filter = {
             "range": {
                 "volume": {
@@ -243,12 +232,12 @@ def search_prices(client, index_name, product, product_name,
         query["query"]["bool"]["must"].append(volume_filter)
 
 
-    res = client.search(index=index_name, body=query)
+    response = client.search(index=index_name, body=query)
 
-    return res
+    return response
 
-def search_quantity(client: Elasticsearch, index_name: str, product, product_name, 
-                    price, power, weight, volume):
+def search_quantity(client, index_name, product, product_name,value, power, weight, volume):
+
     query = {
             "query": {
                 "bool": {
@@ -260,7 +249,7 @@ def search_quantity(client: Elasticsearch, index_name: str, product, product_nam
                         },
                         {
                             "match": {
-                                "group_name": product_name
+                                "product_name": product_name
                             }
                         }
                     ]
@@ -268,32 +257,33 @@ def search_quantity(client: Elasticsearch, index_name: str, product, product_nam
                 },
             "size": 100,
             }
-    if price:
-        min_price, max_price = parse_price_range(price)
-        price_filter = {
-            "range": {
-                "lifecare_price": {
-                    "gte": min_price,
-                    "lte": max_price
-                }
-            }
-        }
-        query["query"]["bool"]["must"].append(price_filter)
+    if value :
+      print("check value", value)
+      min_price, max_price = parse_specification_range(value)
+      price_filter = {
+          "range": {
+              "lifecare_price": {
+                  "gte": min_price,
+                  "lte": max_price
+              }
+          }
+      }
+      query["query"]["bool"]["must"].append(price_filter)
 
     if power:
-        min_power, max_power = parse_price_range(power)
-        power_filter = {
-            "range": {
-                "power": {
-                    "gte": min_power,
-                    "lte": max_power
-                }
-            }
-        }
-        query["query"]["bool"]["must"].append(power_filter)
+      min_power, max_power = parse_specification_range(power)
+      power_filter = {
+          "range": {
+              "power": {
+                  "gte": min_power,
+                  "lte": max_power
+              }
+          }
+      }
+      query["query"]["bool"]["must"].append(power_filter)
 
     if weight:
-        min_weight, max_weight = parse_price_range(weight)
+        min_weight, max_weight = parse_specification_range(weight)
         weight_filter = {
             "range": {
                 "weight": {
@@ -305,7 +295,8 @@ def search_quantity(client: Elasticsearch, index_name: str, product, product_nam
         query["query"]["bool"]["must"].append(weight_filter)
 
     if volume:
-        min_volume, max_volume = parse_price_range(volume)
+        min_volume, max_volume = parse_specification_range(volume)
+        print(min_volume, max_volume)
         volume_filter = {
             "range": {
                 "volume": {
@@ -315,7 +306,9 @@ def search_quantity(client: Elasticsearch, index_name: str, product, product_nam
             }
         }
         query["query"]["bool"]["must"].append(volume_filter)
+
     res = client.search(index=index_name, body=query)
+    print(query)
     return res
 
 def search_product(client, index_name, product_name):
@@ -323,7 +316,6 @@ def search_product(client, index_name, product_name):
         "query": {
             "bool": {
                 "must": [
-                    
                     {
                         "match": {
                             "product_name": product_name
@@ -333,11 +325,8 @@ def search_product(client, index_name, product_name):
             }
         }
     }
-
-
     res = client.search(index=index_name, body=query)
     return res
-
 
 @timing_decorator
 def search_db(demands: Dict):
@@ -349,9 +338,9 @@ def search_db(demands: Dict):
     # client = init_elastic(df,index_name, ELASTIC_HOST)
     client = init_elastic(dataframe, index_name)
     list_product = dataframe['group_name'].unique()
-    check_match_product = find_closest_match(demands['object'][0], list_product)
     # return check_match_product
-
+    check_match_product = find_closest_match(demands['object'][0], list_product)
+    
     print('check_match_product',check_match_product)
     if check_match_product[1] < 75: # nếu độ match < 75 thì không tìm được sản phẩm
         check = 0
@@ -364,11 +353,11 @@ def search_db(demands: Dict):
         else:
             prices = ast.literal_eval(demands['price'])*len(demands['object'])
         power = demands['power']
+        print("=" * 50, power)
         weight = demands['weight']
         volume = demands['volume']
         specifications = demands['specifications']
 
-    t1 = time.time()
     print('------check object----', product_names)
     result = []
     for product_name, price in zip(product_names, prices):
@@ -378,28 +367,30 @@ def search_db(demands: Dict):
         product = result_df['group_product_name'].tolist()[0]
         # full option specifications, giá, công suất, khối lượng, dung tích
         if specifications and (price or power or weight or volume) or specifications:
+            print('---specifications---', specifications)
             # Count quantity each group name
             if len([specifications]) > 1:
                 resp = search_specifications(client, index_name, product, product_name, specifications, price, power, weight, volume)
                 check = 2 
             elif price or power or weight or volume:
-                resp = search_prices(client, index_name, product, product_name, price,  power, weight, volume)
+                resp = search_values(client, index_name, product, product_name, price,  power, weight, volume)
                 check = 2 
             else:
                 resp = search_product(client, index_name, product_name)
                 check = 2
             
         elif price or power or weight or volume:
-            resp = search_prices(client, index_name, product, product_name,price,  power, weight, volume)
+            print('---price---', price)
+            resp = search_values(client, index_name, product, product_name,price,  power, weight, volume)
             check = 2 
         else:
+            print('---product---', product_name)
             resp = search_product(client, index_name, product_name)
             check = 2
 
         result.append(resp)
 
     for product_name, product in zip(product_names, result):
-        s_name = product_name
         # Check query is None
         if product['hits']['hits'] == [] and check != 0:
             out_text += ""
@@ -453,7 +444,6 @@ def search_db(demands: Dict):
             out_text += f"---Hiện có {cnt} sản phẩm là:"
             out_text += quantity_name
             out_text += f"...còn nữa. Hãy trả lời là có {cnt} sản phẩm!"
-    print("-----time elastic search-------:",time.time() - t1)
     logging.info(f'======== elasticsearch output ==========:\n{out_text}')
     print('======== elasticsearch output ==========:\n', out_text)
     return out_text, products, check
