@@ -13,7 +13,7 @@ Chatbot sales army is a chatbot product aimed at selling and consulting products
 ## **1. Pipeline**
 
 <div align="center">
-<img src="./images/Pipeline.png" alt="pipeline" width=1000 height=500/>
+<img src="./images/pipeline.png" alt="pipeline" width=1000 height=500/>
 </div>
 
 ## **2. Tree Project**
