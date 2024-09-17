@@ -157,10 +157,8 @@ def search_values(client, index_name, product, product_name,
         "size": number_size_elas
     }
 
-    print(power)
-
     # Add specifications-based filters
-    if price is not None:
+    if price:
         order, word, _price = get_keywords(price)
         if word:
             query["sort"] = [
@@ -177,9 +175,8 @@ def search_values(client, index_name, product, product_name,
         }
         query["query"]["bool"]["must"].append(price_filter)
 
-    if power is not None:
+    if power:
         order, word, _power = get_keywords(power)
-        print(order)
         if word:
             query["sort"] = [
                 {"lifecare_price": {"order": order}}
@@ -196,7 +193,7 @@ def search_values(client, index_name, product, product_name,
         }
         query["query"]["bool"]["must"].append(power_filter)
 
-    if weight is not None:
+    if weight:
         order, word, _weight = get_keywords(weight)
         if word:
             query["sort"] = [
@@ -214,7 +211,7 @@ def search_values(client, index_name, product, product_name,
         }
         query["query"]["bool"]["must"].append(weight_filter)
 
-    if volume is not None:
+    if volume:
         order, word, _volume = get_keywords(volume)
         if word:
             query["sort"] = [
@@ -236,7 +233,7 @@ def search_values(client, index_name, product, product_name,
 
     return response
 
-def search_quantity(client, index_name, product, product_name,value, power, weight, volume):
+def search_quantity(client, index_name, product, product_name, value, power, weight, volume):
 
     query = {
             "query": {
@@ -308,7 +305,6 @@ def search_quantity(client, index_name, product, product_name,value, power, weig
         query["query"]["bool"]["must"].append(volume_filter)
 
     res = client.search(index=index_name, body=query)
-    print(query)
     return res
 
 def search_product(client, index_name, product_name):

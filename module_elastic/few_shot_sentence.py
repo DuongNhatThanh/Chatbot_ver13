@@ -98,17 +98,17 @@ def classify_intent(question: str) -> Dict:
     """
 
     # Các specifications cần phân loại
-    specificationss = ["giá", "công suất", "dung tích", "khối lượng", "số lượng","thông tin chung"]
+    specifications = ["giá", "công suất", "dung tích", "khối lượng", "số lượng","thông tin chung"]
     # Tạo prompt để phân loại câu hỏi
     prompt_template = """
-    Phân loại câu hỏi sau đây chỉ một trong các loại sau: {specificationss}.
+    Phân loại câu hỏi sau đây chỉ một trong các loại sau: {specifications}.
 
     Câu hỏi: {question}
 
     Loại:
     """
     prompt = PromptTemplate(
-        input_variables=["specificationss", "question"],
+        input_variables=["specifications", "question"],
             template=prompt_template,
     )
 
@@ -116,7 +116,7 @@ def classify_intent(question: str) -> Dict:
 
     # Hàm phân loại câu hỏi
     query_classified = chain.invoke({
-        "specificationss": ", ".join(specificationss),
+        "specifications": ", ".join(specifications),
         "question": question
     }).content
 

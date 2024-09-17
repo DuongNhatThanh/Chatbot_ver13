@@ -4,8 +4,7 @@ from module_elastic import (
     search_db
 )
 
-
-query = "bán cho tôi điều hòa có cân nặng lớn nhất."
+query = "bán cho tôi điều hòa có giá lớn nhất."
 demands = classify_intent(query)
 print(demands)
 response, _, _ = search_db(demands=demands)
