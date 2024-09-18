@@ -2,18 +2,14 @@ from typing import Dict
 from langchain.memory import ConversationBufferWindowMemory
 from source.retriever import get_context
 from source.router import call_funcion
-from elastic_search.few_shot_sentence import classify_intent
-from elastic_search.retrieval import search_db
+from module_elastic import classify_intent, search_db
 from utils import (
-    PROMPT_HEADER,
-    PROMPT_HISTORY,
-    GradeReWrite,
-    timing_decorator
+    PROMPT_HEADER, PROMPT_HISTORY,
+    GradeReWrite, timing_decorator
 )
 from logs.logger import set_logging_error, set_logging_terminal
-from configs.load_config import LoadConfig
+from configs.config_system import SYSTEM_CONFIG
 
-APP_CFG = LoadConfig()
 logger_error = set_logging_error()    
 logger_terminal = set_logging_terminal()
 
@@ -37,7 +33,7 @@ def rewrite_query(query: str, history: str) -> str:
     """
     logger_terminal.info(f"Query User: {query}")
 
-    llm_with_output = APP_CFG.load_rewrite_model().with_structured_output(GradeReWrite)
+    llm_with_output = SYSTEM_CONFIG.load_rewrite_model().with_structured_output(GradeReWrite)
     query_rewrite = llm_with_output.invoke(PROMPT_HISTORY.format(question=query, chat_history=history)).rewrite
     logger_terminal.info(f"Query Rewrite: {query_rewrite}")
     
@@ -65,19 +61,15 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
     type = call_funcion(query_rewrited)
     print(type)
 
-    results = {"type": type, "out_text": None, "extract_similarity": False, "extract_inventory": False}
+    results = {"type": type, "out_text": None, "extract_similarity": False}
 
 
     if type == "LLM_predict": # LLM tự trả lời
         prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
                                             context="", 
                                             instruction_answer="")
-        response  = APP_CFG.load_rag_model().invoke(input=prompt_final).content
+        response  = SYSTEM_CONFIG.load_rag_model().invoke(input=prompt_final).content
         results['out_text'] = response
-
-    elif type == "extract_inventory": # sản phẩm tồn kho
-        results["extract_inventory"] = True
-        results['out_text'] = "Anh/chị vui lòng nhập mã hoặc tên sản phẩm và mã tỉnh theo mẫu sau:"
 
     elif type == "extract_similarity": # sản phẩm tương tự
         results["extract_similarity"] = True
@@ -89,7 +81,7 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
         prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
                                             context=context, 
                                             instruction_answer=instruction_answer)
-        response = APP_CFG.load_rag_model().invoke(prompt_final).content
+        response = SYSTEM_CONFIG.load_rag_model().invoke(prompt_final).content
         results['out_text'] = response 
 
     else: # elastic search
@@ -102,7 +94,7 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
         prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
                                             context=save_outtext, 
                                             instruction_answer=instruction_answer)
-        response = APP_CFG.load_rag_model().invoke(prompt_final).content
+        response = SYSTEM_CONFIG.load_rag_model().invoke(prompt_final).content
         results['out_text'] = response 
     
     memory.chat_memory.add_user_message(query)
@@ -142,7 +134,7 @@ def chat_with_history_copy(query: str) -> Dict[str, str]:
         prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
                                             context="", 
                                             instruction_answer="")
-        response  = APP_CFG.load_rag_model().invoke(input=prompt_final).content
+        response  = SYSTEM_CONFIG.load_rag_model().invoke(input=prompt_final).content
         results['out_text'] = response
 
     elif type == "extract_similarity": # sản phẩm tương tự
@@ -155,7 +147,7 @@ def chat_with_history_copy(query: str) -> Dict[str, str]:
         prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
                                             context=context, 
                                             instruction_answer=instruction_answer)
-        response = APP_CFG.load_rag_model().invoke(prompt_final).content
+        response = SYSTEM_CONFIG.load_rag_model().invoke(prompt_final).content
         results['out_text'] = response 
 
     else: # elastic search
@@ -171,7 +163,7 @@ def chat_with_history_copy(query: str) -> Dict[str, str]:
         prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
                                             context=save_outtext, 
                                             instruction_answer=instruction_answer)
-        response = APP_CFG.load_rag_model().invoke(prompt_final).content
+        response = SYSTEM_CONFIG.load_rag_model().invoke(prompt_final).content
         results['out_text'] = response 
     
     memory.chat_memory.add_user_message(query)

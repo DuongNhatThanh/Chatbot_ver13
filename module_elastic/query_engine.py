@@ -1,13 +1,10 @@
 import re
 import ast
-import logging
 import pandas as pd
 from typing import Dict, List, Tuple, Optional
 from elasticsearch import Elasticsearch
 from utils import timing_decorator
-from module_elastic import (
-    init_elastic, find_closest_match, parse_specification_range, get_keywords
-)
+from module_elastic import init_elastic, find_closest_match, parse_specification_range, get_keywords
 from logs.logger import set_logging_terminal
 from configs import ELASTICH_SEARCH_CONFIG, SYSTEM_CONFIG
 
@@ -38,7 +35,7 @@ def create_filter_range(field: str, value: str) -> Dict:
     }
     return range_filter
 
-def create_elastic_query(product: str, product_name: str, 
+def create_elasticsearch_query(product: str, product_name: str, 
                          specifications: Optional[str] = None,
                          price: Optional[str] = None,
                          power: Optional[str] = None,
@@ -62,8 +59,9 @@ def create_elastic_query(product: str, product_name: str,
     if specifications:
         query['query']['bool']['must'].append({"match": {"specifications": specifications}})
 
-    for field, value in [('literal_price', price), ('power', power), ('weight', weight), ('volume', volume)]:
+    for field, value in [('lifecare_price', price), ('power', power), ('weight', weight), ('volume', volume)]:
         if value:  # Nếu có thông số cần filter
+            print(value)
             order, word, _value = get_keywords(value)
             if word: # Nếu cần search lớn nhất, nhỏ nhất, min, max
                 query["sort"] = [
@@ -103,8 +101,9 @@ def search_db(demands: Dict)-> Tuple[str, List[Dict], int]:
     client = init_elastic(DATAFRAME, INDEX_NAME)
     list_products = DATAFRAME['group_name'].unique()
     product_names = demands['object']
-    prices = ast.literal_eval(demands['price']) if isinstance(demands['price'], str) else demands['price']
-    prices = prices * len(product_names) if len(prices) == 1 else prices
+    prices = demands['price']
+    # prices = ast.literal_eval(demands['price']) if isinstance(demands['price'], str) else demands['price']
+    # prices = prices * len(product_names) if len(prices) == 1 else prices
 
     queries = []
     for product_name, price in zip(product_names, prices):
@@ -115,17 +114,19 @@ def search_db(demands: Dict)-> Tuple[str, List[Dict], int]:
             continue
         product = DATAFRAME[DATAFRAME['group_name'] == match_product]['group_product_name'].iloc[0]
     
-        query = create_elastic_query(
+        query = create_elasticsearch_query(
             product, product_name, demands.get('specifications'),
             price, demands.get('power'), demands.get('weight'), demands.get('volume')
         )
+
+        print(query)
+
         queries.append(query)
     
     if not queries:
         return "", [], 0
     
     results = bulk_search_products(client, queries)
-    print(results)
     out_text = ""
     products = []
     check = 2 if results[0]['hits']['hits'] else 0
@@ -133,13 +134,12 @@ def search_db(demands: Dict)-> Tuple[str, List[Dict], int]:
     for product_name, result in zip(product_names, results):
         for i, hit in enumerate(result['hits']['hits'][:4]):
             product_details = hit['_source']
-            if float(hit.get('_score', 0)) >= 2.5:
-                out_text += format_product_output(i, product_details)
-                products.append({
-                    "code": product_details['product_info_id'],
-                    "name": product_details['product_name'],
-                    "link": product_details['file_path']
-                })
+            out_text += format_product_output(i, product_details)
+            products.append({
+                "code": product_details['product_info_id'],
+                "name": product_details['product_name'],
+                "link": product_details['file_path']
+            })
 
     return out_text, products, check
 

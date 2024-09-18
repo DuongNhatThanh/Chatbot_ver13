@@ -1,12 +1,14 @@
 import openai
+from typing import Dict, Any
 from utils.prompt import PROMP_CALLING
+
 
 
 def extract_product_els(product_name, price, power, weight, volume, specifications):
     '''
     Bạn là chuyên gia phân tích dữ liệu lấy thông tin từ "Input" và trả về đầy đủ các thông tin bên dưới:
     Inputs:
-        product_name (str): Tên của sản phẩm
+        object (str): Tên của sản phẩm
         price (str): Giá của sản phẩm
         power (str): Công suất của sản phẩm
         weight (str): Khối lượng của sản phẩm
@@ -28,7 +30,6 @@ def extract_similarity(similarity_product):
         similarity_product (str): Nếu trong câu có từ "sản phẩm tương tự" hay "tương tự" thì giá trị của similarity_product bằng "sản phẩm tương tự" còn nếu trong câu không có từ "sản phẩm tương tự" thì bằng ""
     '''
 
-
 # Defining how we want ChatGPT to call our custom functions
 my_custom_functions = [
     {
@@ -37,25 +38,25 @@ my_custom_functions = [
         'parameters': {
             'type': 'object',
             'properties': {
-                'product_name': {
+                'object': {
                     'type': 'string',
-                    'description': 'Hãy lấy tên của sản phẩm có trong câu hỏi, nếu từ 2 sản phẩm trở lên thì ví dụ như : "product_name":"đèn năng lượng", "điều hòa".'
+                    'description': 'Hãy lấy tên của sản phẩm có trong câu hỏi, nếu từ 2 sản phẩm trở lên thì ví dụ như : "object":"đèn năng lượng", "điều hòa".'
                 },
                 'price': {
                     'type': 'string',
-                    'description': 'Hãy lấy giá của sản phẩm có trong câu hỏi nếu không có thì "price" = "" , trường hợp "giá rẻ" hoặc "giá đắt nhất" thì lấy nguyên các cụm đó.'
+                    'description': 'Hãy lấy giá của sản phẩm có trong câu hỏi nếu không có thì trả ra '', trường hợp "giá rẻ" hoặc "giá đắt nhất" thì lấy nguyên các cụm đó.'
                 },
                 'power': {
                     'type': 'string',
-                    'description': 'Hãy lấy công suất của sản phẩm có trong câu hỏi nếu không có thì "power" = "" , trường hợp "công suất nhỏ nhất" hoặc "công suất lớn nhất" thì lấy nguyên các cụm đó.'
+                    'description': 'Hãy lấy công suất của sản phẩm có trong câu hỏi nếu không có thì trả ra '' , trường hợp "công suất nhỏ nhất" hoặc "công suất lớn nhất" thì lấy nguyên các cụm đó.'
                 },
                 'weight': {
                     'type': 'string',
-                    'description': 'Hãy lấy khối lượng của sản phẩm có trong câu hỏi nếu không có thì "weight" = "" , trường hợp "khối lượng nhỏ nhất" hoặc "khối lượng lớn nhất" thì lấy nguyên các cụm đó.'
+                    'description': 'Hãy lấy khối lượng của sản phẩm có trong câu hỏi nếu không có thì trả ra '' , trường hợp "khối lượng nhỏ nhất" hoặc "khối lượng lớn nhất" thì lấy nguyên các cụm đó.'
                 },
                 'volume': {
                     'type': 'string',
-                    'description': 'Hãy lấy khối lượng của sản phẩm có trong câu hỏi nếu không có thì "volume" = "" , trường hợp "thể tích nhỏ nhất" hoặc "thể tích lớn nhất" thì lấy nguyên các cụm đó.'
+                    'description': 'Hãy lấy khối lượng của sản phẩm có trong câu hỏi nếu không có thì tra ra '' , trường hợp "thể tích nhỏ nhất" hoặc "thể tích lớn nhất" thì lấy nguyên các cụm đó.'
                 },
                 'specifications': {
                     'type': 'string',
@@ -94,7 +95,7 @@ my_custom_functions = [
 
 
 
-def call_funcion(input: str) -> str:
+def call_function(input: str) -> Dict:
     """
     Sử dụng function calling để gọi các hàm custom và phân loại câu hỏi của người dùng.
     Args:
@@ -106,19 +107,24 @@ def call_funcion(input: str) -> str:
     openai_response = openai.chat.completions.create(
         model = 'gpt-4o-mini',
         messages = [
-            {'role': 'system', 'content': PROMP_CALLING},
+            # {'role': 'system', 'content': PROMP_CALLING},
             {'role': 'user', 'content': input}
         ],
         functions = my_custom_functions,
         function_call = 'auto'
     )
 
-    TEMP = openai_response.choices[0].message
-    if TEMP.content is not None:
-        return "LLM_predict"
+    results = {'function_called': None, "arguments": None}
+    message = openai_response.choices[0].message
+    if message.content is not None:
+        results['funtion_called'] = message.function_call.name
+        results['arguments'] = message.function_call.arguments
     else:
-        function_called = TEMP.function_call.name
-        return function_called
+        function_called = message.function_call.name
+        arguments = message.function_call.arguments
+        results['function_called'] = function_called
+        results['arguments'] = arguments
+    return results
     
 if __name__ == "__main__":
-    print(call_funcion("Tôi muốn mua điều hòa 10 triệu"))
+    print(call_function("Tôi muốn mua điều hòa 10 triệu"))

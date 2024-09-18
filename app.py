@@ -1,6 +1,6 @@
 import gradio as gr
-from configs.load_config import LoadConfig
-from source.generater import chat_with_history
+from configs.config_system import LoadConfig
+from source.chat import chat_with_history
 APP_CFG = LoadConfig()
 
 def reset_conversation():

@@ -1,7 +1,7 @@
 import os
 import csv
 from typing import List
-from configs.load_config import LoadConfig
+from configs.config_system import LoadConfig
 from langchain_core.documents import Document
 
 APP_CFG = LoadConfig()

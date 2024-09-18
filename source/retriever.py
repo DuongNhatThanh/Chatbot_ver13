@@ -1,18 +1,43 @@
 
+import os
 import dotenv
-from typing import List
+from typing import List, Union
 from langchain_core.documents import Document
 from langchain_community.vectorstores import Chroma
 from langchain.retrievers import EnsembleRetriever, ContextualCompressionRetriever
 from langchain_cohere import CohereRerank
 from langchain_community.retrievers import BM25Retriever
-from source.load_db import create_db
-from configs.load_config import LoadConfig
 from utils import timing_decorator
+from utils.data_processer import csv2txt_product, csv2text_question
+from configs.config_system import LoadConfig
+
 
 APP_CONFIG = LoadConfig()
 dotenv.load_dotenv()
 
+def create_db(db_name: str) -> Union[str, Chroma, int]:
+    """
+    Load data chunked và tạo vector db cho data
+    """
+    db_path = os.path.join(APP_CONFIG.vector_database_directory, db_name)
+    if db_name == "dieu_hoa":
+        csv_path = APP_CONFIG.csv_product_directory
+        data_chunked = csv2txt_product(csv_link=csv_path)
+        top_K = APP_CONFIG.top_k_product
+
+    else:
+        csv_path = APP_CONFIG.csv_question_user
+        data_chunked = csv2text_question(csv_link=csv_path)
+        top_K = APP_CONFIG.top_k_question
+
+    if not db_path:
+        vectordb = Chroma.from_documents(documents=data_chunked, 
+                                            embedding=APP_CONFIG.load_embed_openai_model(),
+                                            persist_directory=db_path)
+    else:
+        vectordb = Chroma(persist_directory=db_path, 
+                            embedding_function=APP_CONFIG.load_embed_openai_model())
+    return data_chunked, vectordb, top_K
 
 def init_retriever(vector_db: Chroma, data_chunked: List[Document], top_k: int) -> EnsembleRetriever:
     """

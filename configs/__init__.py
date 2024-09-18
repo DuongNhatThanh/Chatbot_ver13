@@ -1,2 +1,2 @@
-from .load_config import SYSTEM_CONFIG
-from .config_fewshot.enum import ELASTICH_SEARCH_CONFIG
+from .config_system import SYSTEM_CONFIG
+from .config_fewshot.config_fewshot import ELASTICH_SEARCH_CONFIG

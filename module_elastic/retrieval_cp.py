@@ -376,8 +376,8 @@ def search_db(demands: Dict):
                 check = 2
             
         elif price or power or weight or volume:
-            print('---price---', price)
             resp = search_values(client, index_name, product, product_name,price,  power, weight, volume)
+            print(resp)
             check = 2 
         else:
             print('---product---', product_name)
@@ -441,5 +441,5 @@ def search_db(demands: Dict):
             out_text += quantity_name
             out_text += f"...còn nữa. Hãy trả lời là có {cnt} sản phẩm!"
     logging.info(f'======== elasticsearch output ==========:\n{out_text}')
-    print('======== elasticsearch output ==========:\n', out_text)
+    # print('======== elasticsearch output ==========:\n', out_text)
     return out_text, products, check
