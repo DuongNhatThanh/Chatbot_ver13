@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 import yaml
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
+# from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 
 load_dotenv()
 os.environ['LANGCHAIN_TRACING_V2'] = 'true'
@@ -20,6 +20,7 @@ class LoadConfig:
         self.load_directories(app_config=app_config)
         self.load_llm_config(app_config=app_config)
         self.load_retriver_config(app_config=app_config)
+        self.load_elasticseach_config(app_config=app_config)
 
     def load_directories(self, app_config):
         # Load parameters directories from load_config.yml file 
@@ -52,6 +53,14 @@ class LoadConfig:
         self.embedding_openai = app_config['retriever_config']['embedding_openai']
         self.top_k_product = app_config['retriever_config']['top_k_product']
         self.top_k_question = app_config['retriever_config']['top_k_question']
+
+    def load_elasticseach_config(self, app_config):
+        self.elastic_url = app_config['elastic_seach_config']['elastic_url']
+        self.num_size_elas = app_config['elastic_seach_config']['num_size_elas']
+        self.index_name = app_config['elastic_seach_config']['index_name']
+        self.quantity_specifications = app_config['elastic_seach_config']['quantity_specifications']
+        self.cheap_keywords = app_config['elastic_seach_config']['cheap_keywords']
+        self.expensive_keywords = app_config['elastic_seach_config']['expensive_keywords']
 
     def load_embed_openai_model(self) -> OpenAIEmbeddings:
         embedding_model = OpenAIEmbeddings()

@@ -6,12 +6,12 @@ from elasticsearch import Elasticsearch
 from utils import timing_decorator
 from module_elastic import init_elastic, find_closest_match, parse_specification_range, get_keywords
 from logs.logger import set_logging_terminal
-from configs import ELASTICH_SEARCH_CONFIG, SYSTEM_CONFIG
+from configs.config_system import SYSTEM_CONFIG
 
 
-NUMBER_SIZE_ELAS = ELASTICH_SEARCH_CONFIG.num_size_elas
+NUMBER_SIZE_ELAS = SYSTEM_CONFIG.num_size_elas
 DATAFRAME = pd.read_excel(SYSTEM_CONFIG.csv_all_product_directory)
-INDEX_NAME = ELASTICH_SEARCH_CONFIG.index_name
+INDEX_NAME = SYSTEM_CONFIG.index_name
 MATCH_THRESHOLD = 75
 
 def create_filter_range(field: str, value: str) -> Dict:
@@ -90,20 +90,20 @@ def bulk_search_products(client: Elasticsearch, queries: List[Dict]) -> List[Dic
 
 @timing_decorator
 def search_db(demands: Dict)-> Tuple[str, List[Dict], int]:
+
     """
     Hàm này dùng để search thông tin sản phẩm trên elasticsearch.
 
     Args:
         - demands: dictionary chứa thông tin cần search
-    Return:
+    Returns:
         - trả về câu trả lời, list chứa thông tin sản phẩm, và số lượng sản phẩm tìm thấy
     """
+
     client = init_elastic(DATAFRAME, INDEX_NAME)
     list_products = DATAFRAME['group_name'].unique()
     product_names = demands['object']
     prices = demands['price']
-    # prices = ast.literal_eval(demands['price']) if isinstance(demands['price'], str) else demands['price']
-    # prices = prices * len(product_names) if len(prices) == 1 else prices
 
     queries = []
     for product_name, price in zip(product_names, prices):

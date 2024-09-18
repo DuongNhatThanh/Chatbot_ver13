@@ -10,7 +10,15 @@ llm_config:
   temperature_rag: 0.0
   temperature_chat: 1.0
   max_token: 1024
-  
+
+elastic_seach_config:
+  index_name: "chatbot"
+  elastic_url: http://10.248.243.105:9200
+  num_size_elas: 10
+  quantity_specifications: ['số lượng', 'bao nhiêu', 'mấy loại', 'số lượng sản phẩm', 'danh sách', 'tổng số', 'mấy', 'liệt kê số lượng', 'liệt kê', 'số lượng hiện còn', 'danh sách đang còn hàng']
+  cheap_keywords: ["rẻ", "giá rẻ", "giá thấp", "bình dân", "tiết kiệm", "khuyến mãi", "giảm giá", "hạ giá", "giá cả phải chăng", "ưu đãi", "rẻ nhất", "nhỏ nhất"]
+  expensive_keywords: ["giá đắt", "giá cao", "xa xỉ", "sang trọng", "cao cấp", "đắt đỏ", "chất lượng cao", "hàng hiệu", "hàng cao cấp", "thượng hạng", "lớn nhất", "đắt nhất"]
+
 retriever_config:
   embedding_baai: BAAI/bge-base-en-v1.5
   vector_embed_baai: 768
@@ -24,4 +32,3 @@ chunk_config:
   chunk_size: 1248
   chunk_overlap: 200
 
-# 82 -> 95: LSD

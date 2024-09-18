@@ -1,7 +1,5 @@
 import gradio as gr
-from configs.config_system import LoadConfig
 from source.chat import chat_with_history
-APP_CFG = LoadConfig()
 
 def reset_conversation():
     # Thêm tin nhắn chào hỏi vào đây

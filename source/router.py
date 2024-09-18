@@ -1,7 +1,7 @@
 import openai
 from typing import Dict, Any
 from utils.prompt import PROMP_CALLING
-
+from utils import timing_decorator
 
 
 def extract_product_els(product_name, price, power, weight, volume, specifications):
@@ -94,7 +94,7 @@ my_custom_functions = [
 ]
 
 
-
+@timing_decorator
 def call_function(input: str) -> Dict:
     """
     Sử dụng function calling để gọi các hàm custom và phân loại câu hỏi của người dùng.
@@ -107,7 +107,7 @@ def call_function(input: str) -> Dict:
     openai_response = openai.chat.completions.create(
         model = 'gpt-4o-mini',
         messages = [
-            # {'role': 'system', 'content': PROMP_CALLING},
+            {'role': 'system', 'content': PROMP_CALLING},
             {'role': 'user', 'content': input}
         ],
         functions = my_custom_functions,

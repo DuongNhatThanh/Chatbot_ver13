@@ -9,34 +9,33 @@ from langchain_cohere import CohereRerank
 from langchain_community.retrievers import BM25Retriever
 from utils import timing_decorator
 from utils.data_processer import csv2txt_product, csv2text_question
-from configs.config_system import LoadConfig
+from configs.config_system import SYSTEM_CONFIG
 
 
-APP_CONFIG = LoadConfig()
 dotenv.load_dotenv()
 
 def create_db(db_name: str) -> Union[str, Chroma, int]:
     """
     Load data chunked và tạo vector db cho data
     """
-    db_path = os.path.join(APP_CONFIG.vector_database_directory, db_name)
+    db_path = os.path.join(SYSTEM_CONFIG.vector_database_directory, db_name)
     if db_name == "dieu_hoa":
-        csv_path = APP_CONFIG.csv_product_directory
+        csv_path = SYSTEM_CONFIG.csv_product_directory
         data_chunked = csv2txt_product(csv_link=csv_path)
-        top_K = APP_CONFIG.top_k_product
+        top_K = SYSTEM_CONFIG.top_k_product
 
     else:
-        csv_path = APP_CONFIG.csv_question_user
+        csv_path = SYSTEM_CONFIG.csv_question_user
         data_chunked = csv2text_question(csv_link=csv_path)
-        top_K = APP_CONFIG.top_k_question
+        top_K = SYSTEM_CONFIG.top_k_question
 
     if not db_path:
         vectordb = Chroma.from_documents(documents=data_chunked, 
-                                            embedding=APP_CONFIG.load_embed_openai_model(),
+                                            embedding=SYSTEM_CONFIG.load_embed_openai_model(),
                                             persist_directory=db_path)
     else:
         vectordb = Chroma(persist_directory=db_path, 
-                            embedding_function=APP_CONFIG.load_embed_openai_model())
+                            embedding_function=SYSTEM_CONFIG.load_embed_openai_model())
     return data_chunked, vectordb, top_K
 
 def init_retriever(vector_db: Chroma, data_chunked: List[Document], top_k: int) -> EnsembleRetriever:
@@ -64,7 +63,7 @@ def init_retriever(vector_db: Chroma, data_chunked: List[Document], top_k: int) 
         retrievers=[retriever_vanilla, retriever_mmr, retriever_BM25], 
         weights=[0.3, 0.3, 0.4])
     # rerank with cohere
-    # compressor = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"), top_n=APP_CONFIG.top_k)
+    # compressor = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"), top_n=SYSTEM_CONFIG.top_k)
     # compression_retriever = ContextualCompressionRetriever(
     #     base_compressor=compressor, 
     #     base_retriever=ensemble_retriever
