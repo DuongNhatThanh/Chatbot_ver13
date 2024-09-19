@@ -1,6 +1,6 @@
 from typing import Dict, Tuple
 from langchain.memory import ConversationBufferWindowMemory
-from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from source.retriever import get_context
 from source.router import decision_search_type
@@ -64,13 +64,10 @@ def chat_with_history(query: str, history) -> Tuple[str, str]:
     print(type)
     results = {"type": type, "out_text": None, "extract_similarity": False}
 
-    PROMPT_HEADER_TEMPLATE = PromptTemplate.from_template(PROMPT_HEADER)
-    PROMPT_HUMAN_TEMPLATE = HumanMessagePromptTemplate(PROMPT_HEADER_TEMPLATE)
-    CHAT_PROMPT_TEMPLATE = ChatPromptTemplate(
+    PROMPT_HEADER_TEMPLATE = PromptTemplate(
         input_variables=['context', 'question', 'instruction_answer'],
-        messages=[PROMPT_HUMAN_TEMPLATE]
-    )
-    rag_chain = CHAT_PROMPT_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
+        template=PROMPT_HEADER)
+    rag_chain = PROMPT_HEADER_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
 
     if type == "LLM_predict": # LLM tự trả lời
         response = rag_chain.invoke({'context':"", 
@@ -132,13 +129,10 @@ def chat_with_history_copy(query: str) -> str:
     print(function_called)
     results = {"type": function_called, "out_text": None, "extract_similarity": False}
 
-    PROMPT_HEADER_TEMPLATE = PromptTemplate.from_template(PROMPT_HEADER)
-    PROMPT_HUMAN_TEMPLATE = HumanMessagePromptTemplate.from_template(PROMPT_HEADER_TEMPLATE)
-    CHAT_PROMPT_TEMPLATE = ChatPromptTemplate(
+    PROMPT_HEADER_TEMPLATE = PromptTemplate(
         input_variables=['context', 'question', 'instruction_answer'],
-        messages=[PROMPT_HUMAN_TEMPLATE]
-    )
-    rag_chain = CHAT_PROMPT_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
+        template=PROMPT_HEADER)
+    rag_chain = PROMPT_HEADER_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
 
     if type == "LLM_predict": # LLM tự trả lời
         response = rag_chain.invoke({'context':"", 

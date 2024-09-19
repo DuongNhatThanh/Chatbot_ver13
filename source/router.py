@@ -1,7 +1,8 @@
 from configs import SYSTEM_CONFIG
 from utils import PROMPT_ROUTER, SeachingDecision
+from utils import timing_decorator
 
-
+@timing_decorator
 def decision_search_type(query: str) -> str: 
     """
     Arg:
