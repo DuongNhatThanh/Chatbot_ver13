@@ -1,4 +1,3 @@
-import re
 import ast
 import pandas as pd
 from typing import Dict, List, Tuple, Optional
@@ -6,12 +5,12 @@ from elasticsearch import Elasticsearch
 from utils import timing_decorator
 from module_elastic import init_elastic, find_closest_match, parse_specification_range, get_keywords
 from logs.logger import set_logging_terminal
-from configs.config_system import SYSTEM_CONFIG
+from configs import SYSTEM_CONFIG, ELASTIC_SEARCH_CONFIG
 
 
-NUMBER_SIZE_ELAS = SYSTEM_CONFIG.num_size_elas
+NUMBER_SIZE_ELAS = ELASTIC_SEARCH_CONFIG.num_size_elas
 DATAFRAME = pd.read_excel(SYSTEM_CONFIG.csv_all_product_directory)
-INDEX_NAME = SYSTEM_CONFIG.index_name
+INDEX_NAME = ELASTIC_SEARCH_CONFIG.index_name
 MATCH_THRESHOLD = 75
 
 def create_filter_range(field: str, value: str) -> Dict:
@@ -103,7 +102,9 @@ def search_db(demands: Dict)-> Tuple[str, List[Dict], int]:
     client = init_elastic(DATAFRAME, INDEX_NAME)
     list_products = DATAFRAME['group_name'].unique()
     product_names = demands['object']
-    prices = demands['price']
+    
+    prices = ast.literal_eval(demands['price']) if isinstance(demands['price'], str) else demands['price']
+    prices = prices * len(product_names) if len(prices) == 1 else prices
 
     queries = []
     for product_name, price in zip(product_names, prices):
@@ -118,8 +119,7 @@ def search_db(demands: Dict)-> Tuple[str, List[Dict], int]:
             product, product_name, demands.get('specifications'),
             price, demands.get('power'), demands.get('weight'), demands.get('volume')
         )
-
-        print(query)
+        # print(query)
 
         queries.append(query)
     

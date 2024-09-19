@@ -1,8 +1,10 @@
-from typing import Dict
+from typing import Dict, Tuple
 from langchain.memory import ConversationBufferWindowMemory
+from langchain_core.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from source.retriever import get_context
-from source.router import call_function
-from module_elastic import  search_db, parse_string_to_dict
+from source.router import decision_search_type
+from module_elastic import  search_db, classify_intent
 from utils import (
     PROMPT_HEADER, PROMPT_HISTORY,
     GradeReWrite, timing_decorator
@@ -12,8 +14,8 @@ from configs.config_system  import SYSTEM_CONFIG
 
 logger_error = set_logging_error()    
 logger_terminal = set_logging_terminal()
-
 memory = ConversationBufferWindowMemory(memory_key="chat_history", k=3)
+
 
 def get_history() -> str:
     history = memory.load_memory_variables({})
@@ -40,7 +42,7 @@ def rewrite_query(query: str, history: str) -> str:
     return query_rewrite
 
 @timing_decorator
-def chat_with_history(query: str, history) -> Dict[str, str]:
+def chat_with_history(query: str, history) -> Tuple[str, str]:
     """
     Hàm này để trả lời câu hỏi của người dùng theo flow: get_history + query-> rewrite_query -> router -> get_context OR search_db OR out_text -> LLM -> response
 
@@ -58,17 +60,22 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
     query_rewrited = rewrite_query(query=query, history=history_conversation)
     print(query_rewrited)
 
-    type = call_function(query_rewrited)
+    type = decision_search_type(query_rewrited) # sử dụng function calling để gọi các hàm custom.
     print(type)
-
     results = {"type": type, "out_text": None, "extract_similarity": False}
 
+    PROMPT_HEADER_TEMPLATE = PromptTemplate.from_template(PROMPT_HEADER)
+    PROMPT_HUMAN_TEMPLATE = HumanMessagePromptTemplate(PROMPT_HEADER_TEMPLATE)
+    CHAT_PROMPT_TEMPLATE = ChatPromptTemplate(
+        input_variables=['context', 'question', 'instruction_answer'],
+        messages=[PROMPT_HUMAN_TEMPLATE]
+    )
+    rag_chain = CHAT_PROMPT_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
 
     if type == "LLM_predict": # LLM tự trả lời
-        prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
-                                            context="", 
-                                            instruction_answer="")
-        response  = SYSTEM_CONFIG.load_rag_model().invoke(input=prompt_final).content
+        response = rag_chain.invoke({'context':"", 
+                                     'question': query_rewrited, 
+                                     'instruction_answer': ""})
         results['out_text'] = response
 
     elif type == "extract_similarity": # sản phẩm tương tự
@@ -78,23 +85,20 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
     elif type == "extract_product_text": # chroma db search
         instruction_answer = get_context(query=query_rewrited, db_name="Cau_hoi_thuong_gap") # lấy ra thông tin câu hỏi tương tự câu query
         context = get_context(query=query_rewrited, db_name="dieu_hoa") # thông tin điều hòa liên quan tới câu query
-        prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
-                                            context=context, 
-                                            instruction_answer=instruction_answer)
-        response = SYSTEM_CONFIG.load_rag_model().invoke(prompt_final).content
+        response = rag_chain.invoke({'context': context, 
+                                     'question': query_rewrited, 
+                                     'instruction_answer': instruction_answer})
         results['out_text'] = response 
 
     else: # elastic search
         instruction_answer = get_context(query=query_rewrited, 
                                          db_name="Cau_hoi_thuong_gap")
-        demands = parse_string_to_dict(query_rewrited)
+        demands = classify_intent(query_rewrited)
         print("= = = = result few short = = = =:", demands)
         response_elastic, products, check = search_db(demands)
-        save_outtext = response_elastic
-        prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
-                                            context=save_outtext, 
-                                            instruction_answer=instruction_answer)
-        response = SYSTEM_CONFIG.load_rag_model().invoke(prompt_final).content
+        response = rag_chain.invoke({'context': response_elastic, 
+                                     'question': query_rewrited, 
+                                     'instruction_answer': instruction_answer})
         results['out_text'] = response 
     
     memory.chat_memory.add_user_message(query)
@@ -106,7 +110,7 @@ def chat_with_history(query: str, history) -> Dict[str, str]:
     return "", history
 
 @timing_decorator
-def chat_with_history_copy(query: str) -> Dict[str, str]:
+def chat_with_history_copy(query: str) -> str:
     """
     Hàm này để trả lời câu hỏi của người dùng theo flow: get_history + query-> rewrite_query -> router -> get_context OR search_db OR out_text -> LLM -> response
 
@@ -124,18 +128,22 @@ def chat_with_history_copy(query: str) -> Dict[str, str]:
     query_rewrited = rewrite_query(query=query, history=history_conversation)
     print(query_rewrited)
 
-    results_funcalled = call_function(query_rewrited) # sử dụng function calling để gọi các hàm custom.
-    type, arguments = results_funcalled['function_called'], results_funcalled['arguments'] 
-    print(results_funcalled)
+    function_called = decision_search_type(query_rewrited) # sử dụng function calling để gọi các hàm custom.
+    print(function_called)
+    results = {"type": function_called, "out_text": None, "extract_similarity": False}
 
-    results = {"type": type, "out_text": None, "extract_similarity": False}
-
+    PROMPT_HEADER_TEMPLATE = PromptTemplate.from_template(PROMPT_HEADER)
+    PROMPT_HUMAN_TEMPLATE = HumanMessagePromptTemplate.from_template(PROMPT_HEADER_TEMPLATE)
+    CHAT_PROMPT_TEMPLATE = ChatPromptTemplate(
+        input_variables=['context', 'question', 'instruction_answer'],
+        messages=[PROMPT_HUMAN_TEMPLATE]
+    )
+    rag_chain = CHAT_PROMPT_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
 
     if type == "LLM_predict": # LLM tự trả lời
-        prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
-                                            context="", 
-                                            instruction_answer="")
-        response  = SYSTEM_CONFIG.load_rag_model().invoke(input=prompt_final).content
+        response = rag_chain.invoke({'context':"", 
+                                     'question': query_rewrited, 
+                                     'instruction_answer': ""})
         results['out_text'] = response
 
     elif type == "extract_similarity": # sản phẩm tương tự
@@ -145,31 +153,24 @@ def chat_with_history_copy(query: str) -> Dict[str, str]:
     elif type == "extract_product_text": # chroma db search
         instruction_answer = get_context(query=query_rewrited, db_name="Cau_hoi_thuong_gap") # lấy ra thông tin câu hỏi tương tự câu query
         context = get_context(query=query_rewrited, db_name="dieu_hoa") # thông tin điều hòa liên quan tới câu query
-        prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
-                                            context=context, 
-                                            instruction_answer=instruction_answer)
-        response = SYSTEM_CONFIG.load_rag_model().invoke(prompt_final).content
+        response = rag_chain.invoke({'context': context, 
+                                     'question': query_rewrited, 
+                                     'instruction_answer': instruction_answer})
         results['out_text'] = response 
 
     else: # elastic search
         instruction_answer = get_context(query=query_rewrited, 
                                          db_name="Cau_hoi_thuong_gap")
-        
-        demands = parse_string_to_dict(arguments)
-        print("= = = = arguments from function calling = = = =:", demands)
-
-        if len(demands['object']) >= 1:  # nếu có object thì mới search
-            response_elastic, products, ok = search_db(demands)
-            save_outtext = response_elastic
-        else: 
-            save_outtext = ""
-        prompt_final = PROMPT_HEADER.format(question=query_rewrited, 
-                                            context=save_outtext, 
-                                            instruction_answer=instruction_answer)
-        response = SYSTEM_CONFIG.load_rag_model().invoke(prompt_final).content
+        demands = classify_intent(query_rewrited)
+        print("= = = = result few short = = = =:", demands)
+        response_elastic, products, check = search_db(demands)
+        response = rag_chain.invoke({'context': response_elastic, 
+                                     'question': query_rewrited, 
+                                     'instruction_answer': instruction_answer})
         results['out_text'] = response 
     
     memory.chat_memory.add_user_message(query)
     memory.chat_memory.add_ai_message(results['out_text'])
+
 
     return results['out_text']

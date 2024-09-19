@@ -2,7 +2,7 @@ import re
 import ast
 from fuzzywuzzy import fuzz, process
 from typing import Tuple, Dict, List
-from configs.config_system import SYSTEM_CONFIG
+from configs import SYSTEM_CONFIG, ELASTIC_SEARCH_CONFIG
 
 def parse_specification_range(specification: str) -> Tuple[float, float]:
     """
@@ -67,7 +67,6 @@ def parse_string_to_dict(input_string: str) -> Dict:
         if key == 'object': # chuyển object thành list
             specifications_pairs[key] = [x.strip() for x in value.split(',')]
         if key == 'price': # chuyển price thành list
-            print(specifications_pairs[key])
             specifications_pairs[key] = [specifications_pairs[key]]
 
     # Đưa price có số lượng bằng số lượng object
@@ -89,8 +88,8 @@ def get_keywords(specification: str)-> Tuple[str, str, str]:
     """
 
     order, word = "asc", ""  # Default order
-    cheap_keywords = SYSTEM_CONFIG.cheap_keywords
-    expensive_keywords = SYSTEM_CONFIG.expensive_keywords
+    cheap_keywords = ELASTIC_SEARCH_CONFIG.cheap_keywords
+    expensive_keywords = ELASTIC_SEARCH_CONFIG.expensive_keywords
 
     for keyword in cheap_keywords:
         if keyword in specification.lower():

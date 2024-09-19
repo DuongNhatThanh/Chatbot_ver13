@@ -4,13 +4,11 @@ import dotenv
 from typing import List, Union
 from langchain_core.documents import Document
 from langchain_community.vectorstores import Chroma
-from langchain.retrievers import EnsembleRetriever, ContextualCompressionRetriever
-from langchain_cohere import CohereRerank
+from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
 from utils import timing_decorator
 from utils.data_processer import csv2txt_product, csv2text_question
-from configs.config_system import SYSTEM_CONFIG
-
+from configs import SYSTEM_CONFIG
 
 dotenv.load_dotenv()
 
@@ -20,7 +18,7 @@ def create_db(db_name: str) -> Union[str, Chroma, int]:
     """
     db_path = os.path.join(SYSTEM_CONFIG.vector_database_directory, db_name)
     if db_name == "dieu_hoa":
-        csv_path = SYSTEM_CONFIG.csv_product_directory
+        csv_path = SYSTEM_CONFIG.csv_dieu_hoa_directory
         data_chunked = csv2txt_product(csv_link=csv_path)
         top_K = SYSTEM_CONFIG.top_k_product
 
@@ -55,13 +53,10 @@ def init_retriever(vector_db: Chroma, data_chunked: List[Document], top_k: int) 
     retriever_vanilla = vector_db.as_retriever(search_type="similarity", 
                                                 search_kwargs={"k": top_k})
     
-    retriever_mmr = vector_db.as_retriever(search_type="mmr", 
-                                            search_kwargs={"k": top_k})
-    
-    # initialize the ensemble retriever with 3 Retrievers
+    # initialize the ensemble retriever with 2 Retrievers
     ensemble_retriever = EnsembleRetriever(
-        retrievers=[retriever_vanilla, retriever_mmr, retriever_BM25], 
-        weights=[0.3, 0.3, 0.4])
+        retrievers=[retriever_vanilla, retriever_BM25], 
+        weights=[0.5, 0.5])
     # rerank with cohere
     # compressor = CohereRerank(cohere_api_key=os.getenv("COHERE_API_KEY"), top_n=SYSTEM_CONFIG.top_k)
     # compression_retriever = ContextualCompressionRetriever(
@@ -88,3 +83,9 @@ def get_context(query: str, db_name: str) -> str:
 
     final_contents = "\n\n".join(doc.page_content for doc in contents)
     return final_contents
+
+if __name__ == "__main__":
+    query = "Tôi muốn mua điều hòa có công suất 18000BTU"
+    db_name = "dieu_hoa"
+    context = get_context(query=query, db_name=db_name)
+    print(context)
