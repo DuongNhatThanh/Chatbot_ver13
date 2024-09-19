@@ -3,6 +3,8 @@ directories:
   csv_all_product_directory: data/product_final_300_extract.xlsx
   csv_dieu_hoa_directory: data/dieu_hoa.csv
   csv_question_user: data/Cau_hoi_thuong_gap.csv
+  avt_user: images/avt_user.png
+  avt_bot: imags/avt_bot.png 
   
 llm_config:
   rag_model: gpt-4o-mini-2024-07-18

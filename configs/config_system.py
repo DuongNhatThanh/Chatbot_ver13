@@ -37,6 +37,8 @@ class LoadConfig:
         self.csv_all_product_directory = (
             app_config['directories']['csv_all_product_directory']
         )
+        self.avt_user = app_config['directories']['avt_user']
+        self.avt_bot = app_config['directories']['avt_bot']
 
         
     def load_llm_config(self, app_config):
