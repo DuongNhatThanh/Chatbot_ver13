@@ -3,16 +3,16 @@ from typing import List, Dict
 import yaml
 import hashlib
 import os
-from configs.configurator import APP_CONFIG
+from configs import SYSTEM_CONFIG
 
-USERS_FILE = APP_CONFIG.user_file_path
+USERS_FILE = SYSTEM_CONFIG.user_file_path
 
 def load_user_data() -> Dict[str: Dict[str, str]]:
     """
     Hàm để load thông tin người dùng từ file yaml
     """
     if os.path.exists(USERS_FILE) and os.path.getsize(USERS_FILE) > 0:
-        with open(APP_CONFIG.user_data_path, "r") as f:
+        with open(SYSTEM_CONFIG.user_data_path, "r") as f:
             user_data = yaml.safe_load(f)
     else:
         user_data = {"usernames": {}}

@@ -39,7 +39,7 @@ class LoadConfig:
         )
         self.avt_user = app_config['directories']['avt_user']
         self.avt_bot = app_config['directories']['avt_bot']
-
+        self.logo = app_config['directories']['logo']
         
     def load_llm_config(self, app_config):
         # Load parameters llm from load_config.yml file 

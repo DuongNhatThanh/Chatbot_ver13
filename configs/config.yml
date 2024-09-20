@@ -5,6 +5,7 @@ directories:
   csv_question_user: data/Cau_hoi_thuong_gap.csv
   avt_user: images/avt_user.png
   avt_bot: imags/avt_bot.png 
+  logo: images/logo.png
   
 llm_config:
   rag_model: gpt-4o-mini-2024-07-18

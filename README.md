@@ -1,4 +1,8 @@
 <div align="center">
+<img src="./images/logo.png" alt="pipeline" width=500/>
+</div>
+
+<div align="center">
 
 # SALES ARMY CHATBOT
 

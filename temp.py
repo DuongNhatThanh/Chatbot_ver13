@@ -55,6 +55,7 @@ def create_elasticsearch_query(product: str, product_name: str,
         "size": NUMBER_SIZE_ELAS
     }
 
+
     for field, value in [('lifecare_price', price), ('power', power), ('weight', weight), ('volume', volume)]:
         if value:  # Nếu có thông số cần filter
             print(value)
@@ -137,7 +138,7 @@ def search_db(demands: Dict)-> Tuple[str, List[Dict], int]:
                 "name": product_details['product_name'],
                 "link": product_details['file_path']
             })
-    # print(out_text)
+
     return out_text, products, check
 
 def format_product_output(index: int, product_details: Dict) -> str:

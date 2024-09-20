@@ -1,9 +1,10 @@
 
-query = "bán cho anh điều hòa MDV 1 chiều với giá 10 triệu nhé"
+query = "có bao nhiêu sản phẩm điều hòa ?"
 
 ######## TEST ELASTICSEARCH ########
 # from module_elastic import search_db, classify_intent
 # demands = classify_intent(question=query)
+# print(demands)
 # response = search_db(demands=demands)
 # print(response[0])
 

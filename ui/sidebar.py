@@ -1,7 +1,9 @@
 import streamlit as st
+from configs import SYSTEM_CONFIG
+
 
 def show_sidebar():
-    st.sidebar.image(APP_CONFIG.logo_system, use_column_width=True)
+    st.sidebar.image(SYSTEM_CONFIG.logo, use_column_width=True)
     st.markdown("### 🧠 Ứng dụng AI chăm sóc sức khỏe tâm thần của bạn theo DSM-5.")
     st.sidebar.markdown('Hướng dẫn sử dụng:')
     st.sidebar.markdown('1. 🟢 **Đăng nhập tài khoản.**')

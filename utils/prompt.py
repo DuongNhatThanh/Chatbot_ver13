@@ -86,15 +86,11 @@ Lưu ý quan trọng:
 • Thích ứng ngôn ngữ và phong cách giao tiếp theo từng khách hàng.
 • Khi đối mặt với khiếu nại hoặc phản hồi tiêu cực, hãy thể hiện sự đồng cảm và tập
 
-QUESTION USER: {question}
-=================
 Đây là thông tin ngữ cảnh được dùng để trả lời, nếu câu hỏi không liên quan thì không sử dụng: 
 CONTEXT: {context}
 =================
 Trước khi đưa ra câu trả lời cuối cùng cho khách hàng bạn hãy tham khảo mẫu trả lời này:
 {instruction_answer}
-==================
-ANSWER:
 """
 
 
@@ -109,7 +105,7 @@ HƯỚNG DẪN:
         Đánh giá mức độ liên quan của câu hỏi với lịch sử trò chuyện.
     3. Đặt lại câu hỏi:
         Nếu câu hỏi có liên quan đến lịch sử thì đặt lại câu hỏi mới dựa trên các từ khóa chính lấy ở bước 1 và nội dung chính câu hỏi ở bước 2. Câu hỏi viết lại ngắn gọn, rõ ràng tập trung vào sản phẩm. 
-        Nếu câu hỏi không liên quan đến lịch sử thì giữ nguyên câu hỏi hoặc chỉnh sửa nhẹ nhưng không làm thay đổi nội dung.
+        Nếu câu hỏi không liên quan đến lịch sử thì giữ nguyên câu hỏi.
     4. Định dạng câu trả lời:
         Sử dụng tiếng Việt cho toàn bộ câu trả lời.
         Câu trả lời: 
