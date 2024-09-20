@@ -25,18 +25,12 @@ class LoadConfig:
 
     def load_directories(self, app_config):
         # Load parameters directories from load_config.yml file 
-        self.vector_database_directory = (
-            app_config['directories']['vector_database_directory']
-        )
-        self.csv_dieu_hoa_directory = (
-            app_config['directories']['csv_dieu_hoa_directory']
-        )
-        self.csv_question_user = (
-            app_config['directories']['csv_question_user']
-        )
-        self.csv_all_product_directory = (
-            app_config['directories']['csv_all_product_directory']
-        )
+        self.vector_database_directory = app_config['directories']['vector_database_directory']
+        self.csv_dieu_hoa_directory = app_config['directories']['csv_dieu_hoa_directory']
+        self.csv_question_user = app_config['directories']['csv_question_user']
+        self.csv_all_product_directory = app_config['directories']['csv_all_product_directory']
+        self.conversation_path = app_config['directories']['conversation_path']
+        self.info_user_path = app_config['directories']['info_user_path']
         self.avt_user = app_config['directories']['avt_user']
         self.avt_bot = app_config['directories']['avt_bot']
         self.logo = app_config['directories']['logo']

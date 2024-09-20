@@ -9,9 +9,9 @@ query = "có bao nhiêu sản phẩm điều hòa ?"
 # print(response[0])
 
 ####### TEST CHAT MAIN ########
-from source.chat import chat_with_history_copy
-response = chat_with_history_copy(query=query)
-print(response)
+# from source.chat import chat_with_history_copy
+# response = chat_with_history_copy(query=query)
+# print(response)
 
 ######## TEST TOOL SEARCH ########
 # import source.tool_search

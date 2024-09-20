@@ -84,8 +84,8 @@ def get_context(query: str, db_name: str) -> str:
     final_contents = "\n\n".join(doc.page_content for doc in contents)
     return final_contents
 
-if __name__ == "__main__":
-    query = "Tôi muốn mua điều hòa có công suất 18000BTU"
-    db_name = "dieu_hoa"
-    context = get_context(query=query, db_name=db_name)
-    print(context)
+# if __name__ == "__main__":
+query = "Tôi muốn mua điều hòa có công suất 18000BTU"
+db_name = "dieu_hoa"
+context = get_context(query=query, db_name=db_name)
+print(context)

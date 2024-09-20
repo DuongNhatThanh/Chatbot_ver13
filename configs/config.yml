@@ -6,7 +6,9 @@ directories:
   avt_user: images/avt_user.png
   avt_bot: imags/avt_bot.png 
   logo: images/logo.png
-  
+  conversation_path: security/conversation.json
+  info_user_path: security/info_user.json
+
 llm_config:
   rag_model: gpt-4o-mini-2024-07-18
   chatchit_model: gpt-4o-mini-2024-07-18
