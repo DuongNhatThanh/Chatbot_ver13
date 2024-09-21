@@ -1,9 +1,8 @@
 import os
 import json
 from typing import Dict, Tuple, List
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_community.chat_message_histories import ChatMessageHistory
 from source.retriever import get_context
 from source.router import decision_search_type
 from module_elastic import  search_db, classify_intent
@@ -47,12 +46,10 @@ def rewrite_query(query: str, history: str) -> str:
     
     return query_rewrite
 
-def initlize_chatbot(query: int, user_name: str, 
-                     seasion_id: str, 
-                     user_info: str, 
-                     history_conversation: List[Dict]) -> str:
 
-
+def chat_interface(query: int, user_name: str, 
+                     seasion_id: str) -> str:
+    history_conversation = get_session_history(user_name=user_name, seasion_id=seasion_id)
 
     query_rewrited = rewrite_query(query=query, history=history_conversation)
     print(query_rewrited)
@@ -61,12 +58,17 @@ def initlize_chatbot(query: int, user_name: str,
     print(type)
     results = {"type": type, "out_text": None, "extract_similarity": False}
 
+    PROMPT_HEADER_TEMPLATE = PromptTemplate(
+        input_variables=['context', 'question', 'instruction_answer'],
+        template=PROMPT_HEADER)
     rag_chain = PROMPT_HEADER_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
 
     if type == "LLM_predict": # LLM tự trả lời
         response = rag_chain.invoke({'context':"", 
                                      'question': query_rewrited, 
-                                     'instruction_answer': ""})
+                                     'instruction_answer': ""},
+                                     config={'configurable': {'seasion_id': seasion_id,
+                                                              'user_name': user_name}})
         results['out_text'] = response
 
     elif type == "extract_similarity": # sản phẩm tương tự
@@ -76,9 +78,11 @@ def initlize_chatbot(query: int, user_name: str,
     elif type == "extract_product_text": # chroma db search
         instruction_answer = get_context(query=query_rewrited, db_name="Cau_hoi_thuong_gap") # lấy ra thông tin câu hỏi tương tự câu query
         context = get_context(query=query_rewrited, db_name="dieu_hoa") # thông tin điều hòa liên quan tới câu query
-        response = rag_chain.invoke({'context': context, 
+        response = rag_chain.invoke({'context':context,
                                      'question': query_rewrited, 
-                                     'instruction_answer': instruction_answer})
+                                     'instruction_answer': instruction_answer},
+                                     config={'configurable': {'seasion_id': seasion_id,
+                                                              'user_name': user_name}})
         results['out_text'] = response 
 
     else: # elastic search
@@ -87,8 +91,11 @@ def initlize_chatbot(query: int, user_name: str,
         demands = classify_intent(query_rewrited)
         print("= = = = result few short = = = =:", demands)
         response_elastic, products, check = search_db(demands)
-        response = rag_chain.invoke({'context': response_elastic, 
+        response = rag_chain.invoke({'context':response_elastic, 
                                      'question': query_rewrited, 
-                                     'instruction_answer': instruction_answer})
+                                     'instruction_answer': instruction_answer},
+                                     config={'configurable': {'seasion_id': seasion_id,
+                                                              'user_name': user_name}})
         results['out_text'] = response
-
+    
+    return results

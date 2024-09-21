@@ -1,6 +1,11 @@
 import streamlit as st
 from typing import List, Dict
+from source.chat_cp import chat_interface
+from configs.config_system import SYSTEM_CONFIG
 from ui.sidebar import show_sidebar 
+
+
+
 
 def main():
     show_sidebar()
@@ -9,12 +14,11 @@ def main():
     
     if st.session_state.logged_in:
         username = st.session_state.username
-        user_info = st.session_state.user_info
-        st.subheader("💬 LLAMA-INDEX MENTAL HEALTH")
+        # user_info = st.session_state.user_info
+        seasion_id = st.session_state.seasion_id
+        st.subheader("")
         container = st.container()
-        chat_history = load_chat_history()
-        chatbot = initlize_chatbot(chat_history, container=container, username=username, user_info=user_info)
-        chat_interface(agent=chatbot, chat_store=chat_history, container=container)
+        chat_interface(user_name=username, seasion_id=seasion_id, container=container)
 
 if __name__ == "__main__":
     main()
