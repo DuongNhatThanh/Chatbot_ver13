@@ -63,26 +63,16 @@ def chat_interface(query: int, user_name: str,
         template=PROMPT_HEADER)
     rag_chain = PROMPT_HEADER_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
 
-    if type == "LLM_predict": # LLM tự trả lời
-        response = rag_chain.invoke({'context':"", 
-                                     'question': query_rewrited, 
-                                     'instruction_answer': ""},
-                                     config={'configurable': {'seasion_id': seasion_id,
-                                                              'user_name': user_name}})
-        results['out_text'] = response
-
-    elif type == "extract_similarity": # sản phẩm tương tự
+    if type == "SIMILARITY": # sản phẩm tương tự
         results["extract_similarity"] = True
         results['out_text'] = "Bạn hãy nhập thông tin về giá hoặc thông số kỹ thuật của sản phẩm bạn đang quan tâm:"
 
-    elif type == "extract_product_text": # chroma db search
+    elif type == "TEXT": # chroma db search
         instruction_answer = get_context(query=query_rewrited, db_name="Cau_hoi_thuong_gap") # lấy ra thông tin câu hỏi tương tự câu query
         context = get_context(query=query_rewrited, db_name="dieu_hoa") # thông tin điều hòa liên quan tới câu query
-        response = rag_chain.invoke({'context':context,
+        response = rag_chain.invoke({'context': context, 
                                      'question': query_rewrited, 
-                                     'instruction_answer': instruction_answer},
-                                     config={'configurable': {'seasion_id': seasion_id,
-                                                              'user_name': user_name}})
+                                     'instruction_answer': instruction_answer})
         results['out_text'] = response 
 
     else: # elastic search
@@ -91,11 +81,10 @@ def chat_interface(query: int, user_name: str,
         demands = classify_intent(query_rewrited)
         print("= = = = result few short = = = =:", demands)
         response_elastic, products, check = search_db(demands)
-        response = rag_chain.invoke({'context':response_elastic, 
+        # print(response_elastic)
+        response = rag_chain.invoke({'context': response_elastic, 
                                      'question': query_rewrited, 
-                                     'instruction_answer': instruction_answer},
-                                     config={'configurable': {'seasion_id': seasion_id,
-                                                              'user_name': user_name}})
+                                     'instruction_answer': instruction_answer})
         results['out_text'] = response
     
     return results

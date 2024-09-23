@@ -69,17 +69,11 @@ def chat_with_history(query: str, history) -> Tuple[str, str]:
         template=PROMPT_HEADER)
     rag_chain = PROMPT_HEADER_TEMPLATE | SYSTEM_CONFIG.load_rag_model() | StrOutputParser()
 
-    if type == "LLM_predict": # LLM tự trả lời
-        response = rag_chain.invoke({'context':"", 
-                                     'question': query_rewrited, 
-                                     'instruction_answer': ""})
-        results['out_text'] = response
-
-    elif type == "extract_similarity": # sản phẩm tương tự
+    if type == "SIMILARITY": # sản phẩm tương tự
         results["extract_similarity"] = True
         results['out_text'] = "Bạn hãy nhập thông tin về giá hoặc thông số kỹ thuật của sản phẩm bạn đang quan tâm:"
 
-    elif type == "extract_product_text": # chroma db search
+    elif type == "TEXT": # chroma db search
         instruction_answer = get_context(query=query_rewrited, db_name="Cau_hoi_thuong_gap") # lấy ra thông tin câu hỏi tương tự câu query
         context = get_context(query=query_rewrited, db_name="dieu_hoa") # thông tin điều hòa liên quan tới câu query
         response = rag_chain.invoke({'context': context, 
@@ -93,10 +87,11 @@ def chat_with_history(query: str, history) -> Tuple[str, str]:
         demands = classify_intent(query_rewrited)
         print("= = = = result few short = = = =:", demands)
         response_elastic, products, check = search_db(demands)
+        # print(response_elastic)
         response = rag_chain.invoke({'context': response_elastic, 
                                      'question': query_rewrited, 
                                      'instruction_answer': instruction_answer})
-        results['out_text'] = response 
+        results['out_text'] = response
     
     memory.chat_memory.add_user_message(query)
     memory.chat_memory.add_ai_message(results['out_text'])
