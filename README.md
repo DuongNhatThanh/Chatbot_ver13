@@ -22,11 +22,11 @@ Chatbot sales army is a chatbot product aimed at selling and consulting products
     ├── app.py                              # demo on gradio app
     ├── configs
     │   ├── config_fewshot                  # config cho elastic search và các ví dụ fewshot
-    │   │   ├── enum.py
+    │   │   ├── config_fewshot.py
     │   │   ├── example_fewshot.yml
     │   ├── config.yml
     │   ├── __init__.py
-    │   ├── load_config.py
+    │   ├── config_system.py
     ├── data
     │   ├── Cau_hoi_thuong_gap.csv          # file chứa các câu hỏi thường gặp của khách hàng
     │   ├── dieu_hoa.csv                    # file sản phẩm điều hòa
@@ -38,17 +38,15 @@ Chatbot sales army is a chatbot product aimed at selling and consulting products
     │           └── chroma.sqlite3
     ├── elastic_search                      # folder chưa code sử dụng elastic search để search thông tin sp
     │   ├── few_shot_sentence.py
-    │   ├── indexing_db.py
-    │   └── retrieval.py
+    │   ├── elastic_helper.py
+    │   └── query_engine.py
     ├── images                              # ảnh giao diện app
     │   ├── avt_bot.png
-    │   ├── avt_vcc.png
-    │   └── image.png
+    │   ├── avt_user.png
+    │   ├── logo.png
+    │   └── pipeline.png
     ├── logs                                # chứa 3 loại log: thông tin, lỗi, thời gian
-    │   ├── error
     │   ├── logger.py
-    │   ├── terminal
-    │   └── times
     ├── README.md                       
     ├── requirements.txt                    # các thư viện yêu cầu của project
     ├── source
@@ -58,9 +56,9 @@ Chatbot sales army is a chatbot product aimed at selling and consulting products
     │   └── router.py                       # router điều hướng: elastic search, chroma db, tương tự, tồn kho
     ├── test_code.py
     └── utils                               # các file code sử dụng cho cho các file khác
-        ├── base_model.py                   # base model        
-        ├── caculate_time.py                # tính thời gian
-        ├── data_process.py                 # convert csv to text
+        ├── pydantic_model.py               # base model        
+        ├── timekeeper.py                   # tính thời gian
+        ├── data_processer.py               # convert csv to text
         ├── __init__.py                     # import các thư viện từ module utils
         └── prompt.py                       # chưa toàn bộ prompt cho LLM
 
