@@ -17,6 +17,9 @@ __pycache__/
 error
 terminal
 times
+
+# private
+security
 # Distribution / packaging
 .Python
 build/
